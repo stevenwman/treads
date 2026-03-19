@@ -1,14 +1,13 @@
 """
-Tank with two tracked drives using dynamic equality constraint switching.
+Tank with two tracked drives. XZ track plane, gravity -Z, floor at z=0.
 
 Two mirrored chain tracks (left/right) connected to a rigid hull.
-Differential steering: different left/right track speeds to turn.
-Ground plane for driving.
+Sprockets are children of the hull. Chain links are free kinematic trees.
+Differential steering via left/right velocity control.
 
 Usage:
-    uv run python tank.py              # GUI viewer
+    uv run python tank.py              # GUI
     uv run python tank.py --debug      # headless diagnostics
-    uv run python tank.py --record     # save GIF
 """
 
 import argparse
@@ -16,45 +15,44 @@ import math
 import numpy as np
 import mujoco
 
-# ── Track Parameters ────────────────────────────────────────────────────────
+# ── Track parameters (same as chain_track.py) ──────────────────────────────
 
 N_LINKS = 30
-SPROCKET_R = 0.35         # sprocket pitch radius
-HALF_SPAN = 1.4           # half distance between drive/idler centers (along X)
-LINK_THICK = 0.02         # link box half-height (radial)
-LINK_WIDTH = 0.10         # link box half-depth (lateral, along Y for the tank)
-TIMESTEP = 0.002
+SPROCKET_R = 0.35
+HALF_SPAN = 1.4
+LINK_THICK = 0.02
+LINK_WIDTH = 0.10
+TIMESTEP = 0.004
+TARGET_VEL = 1.0
 TENSION_K = 80.0
-TARGET_VEL = 1.0          # rad/s target sprocket speed
+ARC_HALF = math.pi * 0.40
 
 HUB_R = SPROCKET_R - 0.04
-HUB_Z = 0.12             # hub half-length (lateral)
+HUB_HALF_Y = LINK_WIDTH + 0.02
 
 PERIMETER = 2 * math.pi * SPROCKET_R + 2 * (2 * HALF_SPAN)
 LINK_PITCH = PERIMETER / N_LINKS
 
-# Tank geometry
-TRACK_GAUGE = 1.2         # distance between left and right track centers (Y)
+# ── Tank geometry ───────────────────────────────────────────────────────────
+
+TRACK_GAUGE = 1.2         # Y distance between left/right track centers
 HULL_HALF_X = HALF_SPAN + 0.2
 HULL_HALF_Y = TRACK_GAUGE / 2 - 0.05
-HULL_HALF_Z = 0.15        # hull thickness
-HULL_Z_OFFSET = 0.0       # hull center height above sprocket center
+HULL_HALF_Z = 0.12
+SPROCKET_Z = SPROCKET_R + 0.10  # sprocket center height above ground
+HULL_Z = SPROCKET_Z + 0.05      # hull center height
 
-# Sprocket layout per track: (local_name, x_offset, z_offset_in_track_frame)
-# In the tank frame: X = forward, Y = lateral, Z = up
-# In track frame: the stadium is in the XZ plane (X = forward, Z = up)
-SPROCKET_DEFS = [
+# Per-track sprocket defs: (local_name, x_offset)
+SPR_DEFS = [
     ("drive", -HALF_SPAN),
     ("idler",  HALF_SPAN),
     ("mid",    0.0),
 ]
 
-# Constraint parameters
-Z_OFF = LINK_WIDTH * 0.5
-ARC_HALF = math.pi * 0.55
+SIDES = [("left", 1), ("right", -1)]
 
 
-def _normalize_angle(a):
+def _norm_angle(a):
     while a > math.pi:
         a -= 2 * math.pi
     while a < -math.pi:
@@ -63,442 +61,384 @@ def _normalize_angle(a):
 
 
 def stadium_point(s):
-    """Return (x, z, angle) for arc-length s along the stadium in XZ plane.
-    X = forward, Z = up.
-    """
+    """(x_local, z_local, angle) relative to sprocket center height."""
     s = s % PERIMETER
-    top_len = 2 * HALF_SPAN
-    arc_len = math.pi * SPROCKET_R
-
-    if s < top_len:
-        x = HALF_SPAN - s
-        return x, SPROCKET_R, math.pi
-
-    s -= top_len
-    if s < arc_len:
-        theta = math.pi / 2 + s / SPROCKET_R
-        x = -HALF_SPAN + SPROCKET_R * math.cos(theta)
-        z = SPROCKET_R * math.sin(theta)
-        return x, z, theta + math.pi / 2
-
-    s -= arc_len
-    if s < top_len:
-        x = -HALF_SPAN + s
-        return x, -SPROCKET_R, 0.0
-
-    s -= top_len
-    theta = -math.pi / 2 + s / SPROCKET_R
-    x = HALF_SPAN + SPROCKET_R * math.cos(theta)
-    z = SPROCKET_R * math.sin(theta)
-    return x, z, theta + math.pi / 2
+    top = 2 * HALF_SPAN
+    arc = math.pi * SPROCKET_R
+    if s < top:
+        return HALF_SPAN - s, SPROCKET_R, math.pi
+    s -= top
+    if s < arc:
+        th = math.pi / 2 + s / SPROCKET_R
+        return -HALF_SPAN + SPROCKET_R * math.cos(th), SPROCKET_R * math.sin(th), th + math.pi / 2
+    s -= arc
+    if s < top:
+        return -HALF_SPAN + s, -SPROCKET_R, 0.0
+    s -= top
+    th = -math.pi / 2 + s / SPROCKET_R
+    return HALF_SPAN + SPROCKET_R * math.cos(th), SPROCKET_R * math.sin(th), th + math.pi / 2
 
 
 def build_xml():
-    """Generate MJCF XML for the full tank."""
     L = []
     a = L.append
 
     a('<mujoco model="tank">')
     a(f'  <option timestep="{TIMESTEP}" gravity="0 0 -9.81"'
-      f' iterations="500" solver="Newton" tolerance="1e-12" noslip_iterations="20"/>')
+      f' iterations="300" solver="Newton" tolerance="1e-10" noslip_iterations="10"/>')
     a('  <size nconmax="2000" njmax="6000"/>')
+    a('  <visual><global offwidth="1200" offheight="800"/></visual>')
     a('  <default>')
-    a('    <geom friction="0.8 0.01 0.01" condim="4" margin="0.01"/>')
+    a('    <geom friction="0.8 0.01 0.01" condim="4" margin="0.005"/>')
     a('    <equality solref="0.005 1" solimp="0.95 0.99 0.001"/>')
     a('  </default>')
     a('  <worldbody>')
-    a('    <camera name="overview" pos="0 -5 3" xyaxes="1 0 0 0 0.5 1" fovy="50"/>')
+    a('    <camera name="overview" pos="0 -5 3" xyaxes="1 0 0 0 0.3 1" fovy="50"/>')
     a('    <camera name="top" pos="0 0 6" xyaxes="1 0 0 0 1 0" fovy="60"/>')
-    a('    <light pos="0 -3 5" dir="0 0.5 -1" diffuse="1 1 1"/>')
-    a('    <light pos="2 2 5" dir="-0.3 -0.3 -1" diffuse="0.5 0.5 0.5"/>')
+    a('    <camera name="side" pos="-4 0 1.5" xyaxes="0 -1 0 0 0 1" fovy="50"/>')
+    a('    <light pos="0 -3 5" dir="0 0.5 -0.5" diffuse="0.8 0.8 0.8"/>')
+    a('    <light pos="3 3 5" dir="-0.3 -0.3 -1" diffuse="0.4 0.4 0.4"/>')
+    # Ground
+    a('    <geom name="floor" type="plane" size="10 10 0.1" rgba="0.4 0.5 0.4 1"'
+      '     contype="1" conaffinity="2"/>')  # collides with links (contype=2)
+    # RGB axes
+    a('    <geom type="capsule" fromto="0 0 0.001 0.5 0 0.001" size="0.008" rgba="1 0 0 0.8" contype="0" conaffinity="0"/>')
+    a('    <geom type="capsule" fromto="0 0 0.001 0 0.5 0.001" size="0.008" rgba="0 1 0 0.8" contype="0" conaffinity="0"/>')
+    a('    <geom type="capsule" fromto="0 0 0.001 0 0 0.5" size="0.008" rgba="0 0 1 0.8" contype="0" conaffinity="0"/>')
 
-    # Ground plane
-    a('    <geom name="ground" type="plane" size="10 10 0.1" rgba="0.4 0.5 0.4 1"'
-      '     contype="1" conaffinity="3" pos="0 0 0"/>')
-
-    # Hull — the main body of the tank, elevated so tracks clear the ground
-    hull_z = SPROCKET_R + 0.15  # hull center height (extra clearance for initial settle)
-    a(f'    <body name="hull" pos="0 0 {hull_z}">')
+    # ── Hull ──
+    a(f'    <body name="hull" pos="0 0 {HULL_Z}">')
     a(f'      <freejoint name="hull_jnt"/>')
-    a(f'      <geom name="hull_body" type="box"'
-      f' size="{HULL_HALF_X} {HULL_HALF_Y} {HULL_HALF_Z}"'
-      f' rgba="0.3 0.35 0.3 1" mass="20.0"'
-      f' contype="0" conaffinity="0"/>')
+    a(f'      <geom name="hull_box" type="box" size="{HULL_HALF_X} {HULL_HALF_Y} {HULL_HALF_Z}"'
+      f' rgba="0.3 0.35 0.3 1" mass="20.0" contype="0" conaffinity="0"/>')
 
-    # Sprockets are children of the hull
-    for side, y_sign in [("left", 1), ("right", -1)]:
-        y_offset = y_sign * TRACK_GAUGE / 2
-
-        for spr_name, x_off in SPROCKET_DEFS:
-            full_name = f"{side}_{spr_name}"
-            a(f'      <body name="{full_name}_sprocket" pos="{x_off} {y_offset} 0">')
+    # Sprockets as children of hull
+    for side, y_sign in SIDES:
+        y_off = y_sign * TRACK_GAUGE / 2
+        for spr_name, x_off in SPR_DEFS:
+            full = f"{side}_{spr_name}"
+            # Sprocket center is at hull height, offset in X and Y
+            # Z offset from hull center: SPROCKET_Z - HULL_Z
+            dz = SPROCKET_Z - HULL_Z
+            a(f'      <body name="{full}_spr" pos="{x_off} {y_off} {dz}">')
             if spr_name == "idler":
-                a(f'        <joint name="{full_name}_slide" type="slide" axis="1 0 0"'
+                a(f'        <joint name="{full}_slide" type="slide" axis="1 0 0"'
                   f' stiffness="{TENSION_K}" damping="80" range="-0.05 0.3"/>')
-            a(f'        <joint name="{full_name}_hinge" type="hinge" axis="0 1 0" damping="0.2"/>')
-            # Hub — mid gets collision for chain support
-            if spr_name == "mid":
-                a(f'        <geom type="cylinder" size="{HUB_R} {HUB_Z}"'
-                  f' euler="90 0 0" rgba="0.2 0.6 0.2 1"'
-                  f' contype="0" conaffinity="0"/>')
-            else:
-                color = "0.7 0.2 0.2 1" if spr_name == "drive" else "0.2 0.2 0.7 1"
-                a(f'        <geom type="cylinder" size="{HUB_R} {HUB_Z}"'
-                  f' euler="90 0 0" rgba="{color}"'
-                  f' contype="0" conaffinity="0"/>')
-            # Engagement point markers — ring of spheres at pitch radius
-            if spr_name != "mid":
-                n_markers = 12
-                for mi in range(n_markers):
-                    theta = 2 * math.pi * mi / n_markers
-                    mx = SPROCKET_R * math.cos(theta)
-                    mz = SPROCKET_R * math.sin(theta)
-                    a(f'        <geom type="sphere" size="0.012" pos="{mx:.4f} 0 {mz:.4f}"'
-                      f' rgba="1 1 0 0.6" contype="0" conaffinity="0"/>')
+            a(f'        <joint name="{full}_hinge" type="hinge" axis="0 1 0" damping="0.2"/>')
+            col = {"drive": "0.7 0.2 0.2 1", "idler": "0.2 0.2 0.7 1", "mid": "0.2 0.6 0.2 1"}[spr_name]
+            a(f'        <geom type="cylinder" size="{HUB_R} {HUB_HALF_Y}" euler="90 0 0"'
+              f' rgba="{col}" contype="0" conaffinity="0"/>')
             a(f'      </body>')
 
     a('    </body>')  # end hull
 
-    # Chain links — kinematic tree per track
-    # Link 0: freejoint root, links 1..N-1: children with hinge joints
-    # Loop closure (link N-1 → link 0) via equality constraint
+    # ── Chain links (independent kinematic trees per side) ──
     half_len = LINK_PITCH / 2 - 0.005
 
-    for side, y_sign in [("left", 1), ("right", -1)]:
-        y_offset = y_sign * TRACK_GAUGE / 2
+    for side, y_sign in SIDES:
+        y_off = y_sign * TRACK_GAUGE / 2
 
-        # Link 0 — root with freejoint at its stadium position
-        lx0, lz0, ang0 = stadium_point(0)
-        qw0 = math.cos(ang0 / 2)
-        qy0 = math.sin(ang0 / 2)
-        a(f'    <body name="{side}_link_0" pos="{lx0:.6f} {y_offset:.6f} {hull_z + lz0:.6f}"'
-          f' quat="{qw0:.6f} 0 {qy0:.6f} 0">')
+        # Link 0: freejoint root
+        xl, zl, ang = stadium_point(0)
+        wz = SPROCKET_Z + zl
+        qw = math.cos(-ang / 2)
+        qy = math.sin(-ang / 2)
+
+        a(f'    <body name="{side}_link_0" pos="{xl:.6f} {y_off} {wz:.6f}"'
+          f' quat="{qw:.6f} 0 {qy:.6f} 0">')
         a(f'      <freejoint name="{side}_link_0_jnt"/>')
         a(f'      <geom type="box" size="{half_len:.4f} {LINK_WIDTH} {LINK_THICK}"'
-          f' rgba="1.0 0.2 0.2 1" mass="0.05" contype="2" conaffinity="1"/>')
-        a(f'      <geom type="sphere" size="0.015" pos="{LINK_PITCH/2:.4f} 0 0"'
-          f' rgba="0 1 0 1" contype="0" conaffinity="0"/>')
-        a(f'      <geom type="sphere" size="0.015" pos="{-LINK_PITCH/2:.4f} 0 0"'
-          f' rgba="0 0 1 1" contype="0" conaffinity="0"/>')
-        a(f'      <geom type="sphere" size="0.02" pos="0 0 0"'
-          f' rgba="1 0 1 1" contype="0" conaffinity="0"/>')
+          f' rgba="1 0.2 0.2 1" mass="0.05" contype="2" conaffinity="1"/>')
 
-        # Links 1..N-1 — nested children with hinge joints
+        # Links 1..N-1: nested children
         for i in range(1, N_LINKS):
-            # Child body placed at LINK_PITCH along parent's X axis (= parent's fwd edge + child's half)
-            # Hinge at child's backward edge (-LINK_PITCH/2, 0, 0)
-            color = "0.9 0.6 0.1 1"
             a(f'      <body name="{side}_link_{i}" pos="{LINK_PITCH:.6f} 0 0">')
             a(f'        <joint name="{side}_hinge_{i}" type="hinge" axis="0 1 0"'
               f' pos="{-LINK_PITCH/2:.6f} 0 0" damping="0.05"/>')
             a(f'        <geom type="box" size="{half_len:.4f} {LINK_WIDTH} {LINK_THICK}"'
-              f' rgba="{color}" mass="0.05" contype="2" conaffinity="1"/>')
-            a(f'        <geom type="sphere" size="0.015" pos="{LINK_PITCH/2:.4f} 0 0"'
-              f' rgba="0 1 0 0.5" contype="0" conaffinity="0"/>')
-            a(f'        <geom type="sphere" size="0.015" pos="{-LINK_PITCH/2:.4f} 0 0"'
-              f' rgba="0 0 1 0.5" contype="0" conaffinity="0"/>')
-            a(f'        <geom type="sphere" size="0.02" pos="0 0 0"'
-              f' rgba="1 0 1 0.5" contype="0" conaffinity="0"/>')
+              f' rgba="0.9 0.6 0.1 1" mass="0.05" contype="2" conaffinity="1"/>')
 
-        # Close all nested bodies (N-1 closing tags for links 1..N-1, plus 1 for link 0)
-        for i in range(N_LINKS):
-            a(f'    </body>')
+        # Close nested bodies
+        for _ in range(N_LINKS):
+            a('    </body>')
 
     a('  </worldbody>')
 
-    # Actuators — velocity servos
+    # Actuators
     a('  <actuator>')
-    for side in ["left", "right"]:
-        for spr_name, _ in SPROCKET_DEFS:
-            full_name = f"{side}_{spr_name}"
-            a(f'    <velocity name="{full_name}_motor" joint="{full_name}_hinge"'
+    for side, _ in SIDES:
+        for spr_name, _ in SPR_DEFS:
+            full = f"{side}_{spr_name}"
+            a(f'    <velocity name="{full}_motor" joint="{full}_hinge"'
               f' kv="200" ctrllimited="true" ctrlrange="-5 5"/>')
     a('  </actuator>')
 
     # Equality constraints
     a('  <equality>')
-
-    pin_z = LINK_WIDTH * 0.5
-    z_off = LINK_WIDTH * 0.5
-
-    for side in ["left", "right"]:
-        # Loop closure: link_(N-1) fwd edge → link_0 bwd edge
-        a(f'    <connect name="{side}_loop_close"'
-          f' body1="{side}_link_{N_LINKS-1}" body2="{side}_link_0"'
-          f' anchor="{LINK_PITCH/2:.6f} 0 0" active="true"/>')
-
-        # Sprocket engagement constraints
+    for side, _ in SIDES:
+        # Loop closure
+        a(f'    <connect name="{side}_loop" body1="{side}_link_{N_LINKS-1}" body2="{side}_link_0"'
+          f' anchor="{LINK_PITCH/2:.6f} 0 0"/>')
+        # Sprocket engagement
         for i in range(N_LINKS):
-            for spr_name, _ in SPROCKET_DEFS:
-                full_name = f"{side}_{spr_name}"
-                for s, z in [("L", -z_off), ("R", z_off)]:
-                    a(f'    <connect name="{side}_eng_{i}_{spr_name}_{s}"'
-                      f' body1="{full_name}_sprocket" body2="{side}_link_{i}"'
-                      f' anchor="0 0 0"'
-                      f' solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>')
-
+            for spr_name, _ in SPR_DEFS:
+                if spr_name == "mid":
+                    continue
+                full = f"{side}_{spr_name}"
+                a(f'    <connect name="{side}_eng_{i}_{spr_name}"'
+                  f' body1="{full}_spr" body2="{side}_link_{i}"'
+                  f' anchor="0 0 0" active="false"/>')
     a('  </equality>')
     a('</mujoco>')
     return '\n'.join(L)
 
 
 def init_lookups(model):
-    """Build lookup tables for both tracks."""
-    eng_ids = {}  # (side, link_i, spr_name, lr) -> eq_idx
+    eng_ids = {}  # (side, link_i, spr_name) -> eq_idx
     for idx in range(model.neq):
         nm = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_EQUALITY, idx)
         if nm is None:
             continue
-        for side in ["left", "right"]:
-            prefix = f"{side}_eng_"
-            if nm.startswith(prefix):
-                rest = nm[len(prefix):]  # e.g., "5_drive_L"
+        for side, _ in SIDES:
+            pref = f"{side}_eng_"
+            if nm.startswith(pref):
+                rest = nm[len(pref):]
                 parts = rest.split("_")
-                link_i = int(parts[0])
-                lr = parts[-1]
-                spr_name = "_".join(parts[1:-1])
-                eng_ids[(side, link_i, spr_name, lr)] = idx
+                eng_ids[(side, int(parts[0]), "_".join(parts[1:]))] = idx
 
     link_bids = {}
-    for side in ["left", "right"]:
-        link_bids[side] = [
-            mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, f"{side}_link_{i}")
-            for i in range(N_LINKS)
-        ]
+    for side, _ in SIDES:
+        link_bids[side] = [mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, f"{side}_link_{i}")
+                           for i in range(N_LINKS)]
 
     spr_bids = {}
     jnt_ids = {}
-    for side in ["left", "right"]:
-        for spr_name, _ in SPROCKET_DEFS:
-            full = f"{side}_{spr_name}"
-            spr_bids[(side, spr_name)] = mujoco.mj_name2id(
-                model, mujoco.mjtObj.mjOBJ_BODY, f"{full}_sprocket")
-            jnt_ids[(side, spr_name)] = mujoco.mj_name2id(
-                model, mujoco.mjtObj.mjOBJ_JOINT, f"{full}_hinge")
-
-    # Actuator indices
     act_ids = {}
-    for side in ["left", "right"]:
-        for spr_name, _ in SPROCKET_DEFS:
+    for side, _ in SIDES:
+        for spr_name, _ in SPR_DEFS:
             full = f"{side}_{spr_name}"
-            act_ids[(side, spr_name)] = mujoco.mj_name2id(
-                model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"{full}_motor")
+            spr_bids[(side, spr_name)] = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, f"{full}_spr")
+            jnt_ids[(side, spr_name)] = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, f"{full}_hinge")
+            act_ids[(side, spr_name)] = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"{full}_motor")
 
-    # Hinge joint IDs for chain links
-    chain_jnt_ids = {}
-    for side in ["left", "right"]:
-        chain_jnt_ids[side] = []
-        for i in range(1, N_LINKS):
-            jid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, f"{side}_hinge_{i}")
-            chain_jnt_ids[side].append((i, jid))
+    hinge_jids = {}
+    for side, _ in SIDES:
+        hinge_jids[side] = [mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, f"{side}_hinge_{i}")
+                            for i in range(1, N_LINKS)]
 
-    return eng_ids, link_bids, spr_bids, jnt_ids, act_ids, chain_jnt_ids
+    return eng_ids, link_bids, spr_bids, jnt_ids, act_ids, hinge_jids
 
 
-def set_initial_chain_angles(model, data, chain_jnt_ids):
-    """Set hinge angles so the chain forms the stadium shape."""
-    for side in ["left", "right"]:
-        for i, jid in chain_jnt_ids[side]:
-            # Angle difference between link i and link i-1
+def set_initial_shape(model, data, hinge_jids):
+    for side, _ in SIDES:
+        for idx, jid in enumerate(hinge_jids[side]):
+            i = idx + 1
             _, _, ang_i = stadium_point(i * LINK_PITCH)
             _, _, ang_prev = stadium_point((i - 1) * LINK_PITCH)
-            # The hinge angle is the relative rotation
-            delta = _normalize_angle(ang_i - ang_prev)
-            # Negate because Y-axis hinge rotates X toward -Z (opposite convention)
-            data.qpos[model.jnt_qposadr[jid]] = -delta
+            data.qpos[model.jnt_qposadr[jid]] = -_norm_angle(ang_i - ang_prev)
+    mujoco.mj_forward(model, data)
+
+    # Fix loop closure anchors
+    for idx in range(model.neq):
+        nm = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_EQUALITY, idx)
+        if nm and nm.endswith("_loop"):
+            bid1, bid2 = model.eq_obj1id[idx], model.eq_obj2id[idx]
+            w1 = data.xpos[bid1] + data.xmat[bid1].reshape(3, 3) @ model.eq_data[idx, 0:3]
+            model.eq_data[idx, 3:6] = data.xmat[bid2].reshape(3, 3).T @ (w1 - data.xpos[bid2])
     mujoco.mj_forward(model, data)
 
 
-# Per-side engagement state: {(side, link_i, spr_name): local_angle}
 _engaged = {}
 
 
-def update_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids):
-    """Toggle sprocket constraints for both tracks."""
-    for side in ["left", "right"]:
+def seed_initial_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids):
+    top_len = 2 * HALF_SPAN
+    arc_len = math.pi * SPROCKET_R
+
+    for side, _ in SIDES:
         for i in range(N_LINKS):
-            # Link world position
+            s = (i * LINK_PITCH) % PERIMETER
+            spr_name = None
+            if top_len < s < top_len + arc_len:
+                spr_name = "drive"
+            elif 2 * top_len + arc_len < s:
+                spr_name = "idler"
+            if spr_name is None:
+                continue
+
+            key = (side, i, spr_name)
+            eq_idx = eng_ids.get(key)
+            if eq_idx is None:
+                continue
+
             bid = link_bids[side][i]
-            lx = data.xpos[bid][0]
-            lz = data.xpos[bid][2]  # Z is up in tank frame
+            sbid = spr_bids[(side, spr_name)]
+            dx = data.xpos[bid][0] - data.xpos[sbid][0]
+            dz = data.xpos[bid][2] - data.xpos[sbid][2]
+            dist = math.sqrt(dx * dx + dz * dz)
+            world_angle = math.atan2(dz, dx)
+            spr_angle = data.qpos[model.jnt_qposadr[jnt_ids[(side, spr_name)]]]
+            local_angle = _norm_angle(world_angle + spr_angle)
 
-            for spr_name, _ in SPROCKET_DEFS:
-                key = (side, i, spr_name)
+            model.eq_data[eq_idx, 0] = dist * math.cos(local_angle)
+            model.eq_data[eq_idx, 1] = 0.0
+            model.eq_data[eq_idx, 2] = dist * math.sin(local_angle)
+            model.eq_data[eq_idx, 3:6] = 0.0
+            data.eq_active[eq_idx] = 1
+            _engaged[key] = local_angle
 
+    mujoco.mj_forward(model, data)
+
+
+def update_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids):
+    for side, _ in SIDES:
+        for i in range(N_LINKS):
+            lx = data.xpos[link_bids[side][i]][0]
+            lz = data.xpos[link_bids[side][i]][2]
+
+            for spr_name, _ in SPR_DEFS:
                 if spr_name == "mid":
+                    continue
+                key = (side, i, spr_name)
+                eq_idx = eng_ids.get(key)
+                if eq_idx is None:
                     continue
 
                 sbid = spr_bids[(side, spr_name)]
-                sx = data.xpos[sbid][0]
-                sz = data.xpos[sbid][2]
+                sx, sz = data.xpos[sbid][0], data.xpos[sbid][2]
                 spr_angle = data.qpos[model.jnt_qposadr[jnt_ids[(side, spr_name)]]]
+                dx, dz = lx - sx, lz - sz
+                dist = math.sqrt(dx * dx + dz * dz)
 
-                if key in _engaged:
-                    # Check angle-based disengagement
-                    local_angle = _engaged[key]
-                    # Y-axis hinge: world = local - sprocket_angle
-                    world_angle = _normalize_angle(local_angle - spr_angle)
+                on_arc = False
+                if spr_name == "drive":
+                    on_arc = lx < sx + LINK_PITCH * 0.3
+                elif spr_name == "idler":
+                    on_arc = lx > sx - LINK_PITCH * 0.3
+                on_arc = on_arc and abs(dist - SPROCKET_R) < 0.10
 
-                    if spr_name == "drive":
-                        off = abs(_normalize_angle(world_angle - math.pi))
-                    elif spr_name == "idler":
-                        off = abs(_normalize_angle(world_angle))
-
-                    if off > ARC_HALF:
-                        del _engaged[key]
-                        for lr in ("L", "R"):
-                            eq_idx = eng_ids.get((side, i, spr_name, lr))
-                            if eq_idx is not None:
-                                data.eq_active[eq_idx] = 0
+                if on_arc:
+                    world_angle = math.atan2(dz, dx)
+                    local_angle = _norm_angle(world_angle + spr_angle)
+                    model.eq_data[eq_idx, 0] = SPROCKET_R * math.cos(local_angle)
+                    model.eq_data[eq_idx, 1] = 0.0
+                    model.eq_data[eq_idx, 2] = SPROCKET_R * math.sin(local_angle)
+                    model.eq_data[eq_idx, 3:6] = 0.0
+                    data.eq_active[eq_idx] = 1
+                    _engaged[key] = local_angle
                 else:
-                    # Check position-based engagement
-                    dx, dz = lx - sx, lz - sz
-                    dist = math.sqrt(dx * dx + dz * dz)
-
-                    on_arc = False
-                    if spr_name == "drive":
-                        on_arc = lx < sx + LINK_PITCH * 0.3
-                    elif spr_name == "idler":
-                        on_arc = lx > sx - LINK_PITCH * 0.3
-
-                    on_arc = on_arc and (SPROCKET_R * 0.3 < dist < SPROCKET_R * 2.0)
-
-                    if on_arc:
-                        world_angle = math.atan2(dz, dx)
-                        local_angle = _normalize_angle(world_angle + spr_angle)
-
-                        spr_ax = SPROCKET_R * math.cos(local_angle)
-                        spr_az = SPROCKET_R * math.sin(local_angle)
-
-                        for lr, y in [("L", -Z_OFF), ("R", Z_OFF)]:
-                            eq_idx = eng_ids.get((side, i, spr_name, lr))
-                            if eq_idx is None:
-                                continue
-                            # Sprocket anchor in local frame (XZ plane, Y lateral)
-                            model.eq_data[eq_idx, 0] = spr_ax
-                            model.eq_data[eq_idx, 1] = y
-                            model.eq_data[eq_idx, 2] = spr_az
-                            # Link anchor
-                            model.eq_data[eq_idx, 3] = 0.0
-                            model.eq_data[eq_idx, 4] = y
-                            model.eq_data[eq_idx, 5] = 0.0
-                            data.eq_active[eq_idx] = 1
-
-                        _engaged[key] = local_angle
+                    if key in _engaged:
+                        del _engaged[key]
+                    data.eq_active[eq_idx] = 0
 
 
 def step_sim(model, data, eng_ids, link_bids, spr_bids, jnt_ids, act_ids,
              left_vel=TARGET_VEL, right_vel=TARGET_VEL):
-    """One simulation step."""
     t = data.time
-    ramp = min(1.0, t)
-
-    for spr_name, _ in SPROCKET_DEFS:
-        li = act_ids[("left", spr_name)]
-        ri = act_ids[("right", spr_name)]
-        data.ctrl[li] = left_vel * ramp
-        data.ctrl[ri] = right_vel * ramp
-
-    # Let the chain settle before engaging sprockets
-    if t > 0.5:
-        update_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids)
+    ramp = min(1.0, t / 1.0)
+    for spr_name, _ in SPR_DEFS:
+        data.ctrl[act_ids[("left", spr_name)]] = left_vel * ramp
+        data.ctrl[act_ids[("right", spr_name)]] = right_vel * ramp
+    update_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids)
     mujoco.mj_step(model, data)
 
 
+def _init_all(model, data):
+    eng_ids, link_bids, spr_bids, jnt_ids, act_ids, hinge_jids = init_lookups(model)
+    set_initial_shape(model, data, hinge_jids)
+    seed_initial_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids)
+    return eng_ids, link_bids, spr_bids, jnt_ids, act_ids
+
+
 def run_gui():
-    """Launch interactive MuJoCo viewer."""
     xml = build_xml()
     model = mujoco.MjModel.from_xml_string(xml)
     data = mujoco.MjData(model)
     mujoco.mj_forward(model, data)
-
-    eng_ids, link_bids, spr_bids, jnt_ids, act_ids, chain_jnt_ids = init_lookups(model)
-    set_initial_chain_angles(model, data, chain_jnt_ids)
+    eng_ids, link_bids, spr_bids, jnt_ids, act_ids = _init_all(model, data)
 
     import mujoco.viewer as mjv
+    import time
     with mjv.launch_passive(model, data) as viewer:
+        wall_start = time.perf_counter()
+        sim_start = data.time
+        frame_count = 0
+        last_report = wall_start
         while viewer.is_running():
-            step_sim(model, data, eng_ids, link_bids, spr_bids, jnt_ids, act_ids)
+            t0 = time.perf_counter()
+
+            # Step sim toward wall time, but cap to avoid death spiral
+            wall_elapsed = t0 - wall_start
+            target = sim_start + wall_elapsed
+            MAX_STEPS_PER_FRAME = 10
+            n_steps = 0
+            while data.time < target and n_steps < MAX_STEPS_PER_FRAME:
+                step_sim(model, data, eng_ids, link_bids, spr_bids, jnt_ids, act_ids)
+                n_steps += 1
+            # If we can't keep up, accept slower-than-realtime
+            if data.time < target:
+                wall_start = t0
+                sim_start = data.time
+
+            t1 = time.perf_counter()
             viewer.sync()
+            t2 = time.perf_counter()
+
+            frame_count += 1
+            if t2 - last_report > 2.0:
+                fps = frame_count / (t2 - last_report)
+                sim_ms = (t1 - t0) * 1000
+                sync_ms = (t2 - t1) * 1000
+                print(f"FPS={fps:.1f}  sim={sim_ms:.1f}ms({n_steps}steps)  sync={sync_ms:.1f}ms  "
+                      f"sim_t={data.time:.1f}s")
+                frame_count = 0
+                last_report = t2
 
 
 def run_debug():
-    """Run headless diagnostics."""
     xml = build_xml()
-    with open('/home/sman/Work/CMU/Research/track_synthesis/tank.xml', 'w') as f:
-        f.write(xml)
-
     model = mujoco.MjModel.from_xml_string(xml)
     data = mujoco.MjData(model)
     mujoco.mj_forward(model, data)
-
-    eng_ids, link_bids, spr_bids, jnt_ids, act_ids, chain_jnt_ids = init_lookups(model)
-    set_initial_chain_angles(model, data, chain_jnt_ids)
+    eng_ids, link_bids, spr_bids, jnt_ids, act_ids = _init_all(model, data)
     hull_bid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "hull")
 
     for step in range(5000):
         step_sim(model, data, eng_ids, link_bids, spr_bids, jnt_ids, act_ids)
 
-        max_cf = 0.0
-        for c in range(data.ncon):
-            f = np.zeros(6)
-            mujoco.mj_contactForce(model, data, c, f)
-            max_cf = max(max_cf, np.linalg.norm(f))
-
-        max_ev = np.max(np.abs(data.efc_pos[:data.nefc])) if data.nefc > 0 else 0.0
         max_v = np.max(np.abs(data.qvel))
+        max_ev = np.max(np.abs(data.efc_pos[:data.nefc])) if data.nefc > 0 else 0
+        n_eng = sum(1 for idx in eng_ids.values() if data.eq_active[idx])
+        t = data.time
+        hp = data.xpos[hull_bid]
 
-        hull_pos = data.xpos[hull_bid]
-        hull_vel = data.cvel[hull_bid]
-
-        n_eng = sum(1 for idx in eng_ids.values() if data.eq_active[idx]) // 2
+        # Per-side drive angles
+        ld = math.degrees(data.qpos[model.jnt_qposadr[jnt_ids[("left", "drive")]]])
+        rd = math.degrees(data.qpos[model.jnt_qposadr[jnt_ids[("right", "drive")]]])
+        lv = data.qvel[model.jnt_dofadr[jnt_ids[("left", "drive")]]]
+        rv = data.qvel[model.jnt_dofadr[jnt_ids[("right", "drive")]]]
 
         if step < 10 or step % 200 == 0 or max_v > 200 or np.any(np.isnan(data.qpos)):
-            t = data.time
             print(f"step {step:4d}  t={t:.2f}  "
-                  f"ncon={data.ncon:3d}  cf={max_cf:7.1f}  "
-                  f"v={max_v:6.1f}  eng={n_eng:2d}  "
-                  f"hull=({hull_pos[0]:.2f},{hull_pos[1]:.2f},{hull_pos[2]:.2f})")
+                  f"v={max_v:6.1f}  eq_v={max_ev:.4f}  eng={n_eng:2d}  "
+                  f"Ldrv={ld:6.1f}d({lv:5.2f}) Rdrv={rd:6.1f}d({rv:5.2f})  "
+                  f"hull=({hp[0]:.2f},{hp[1]:.2f},{hp[2]:.2f})")
+            if np.any(np.isnan(data.qpos)):
+                print(">>> NaN")
+                break
 
-        if np.any(np.isnan(data.qpos)):
-            print(">>> NaN, stopping")
-            break
-
-
-def run_record():
-    """Record GIF."""
-    xml = build_xml()
-    model = mujoco.MjModel.from_xml_string(xml)
-    data = mujoco.MjData(model)
-    mujoco.mj_forward(model, data)
-
-    eng_ids, link_bids, spr_bids, jnt_ids, act_ids, chain_jnt_ids = init_lookups(model)
-    set_initial_chain_angles(model, data, chain_jnt_ids)
-
-    renderer = mujoco.Renderer(model, width=800, height=600)
-    frames = []
-
-    for step in range(5000):
-        step_sim(model, data, eng_ids, link_bids, spr_bids, jnt_ids, act_ids)
-        if step % 10 == 0:
-            renderer.update_scene(data, camera="overview")
-            frames.append(renderer.render().copy())
-
-    import imageio
-    out = "/home/sman/Work/CMU/Research/track_synthesis/tank.gif"
-    imageio.mimsave(out, frames, fps=30, loop=0)
-    print(f"Saved {out} ({len(frames)} frames)")
+    print()
+    print("=== SUMMARY ===")
+    print(f"  t={data.time:.2f}  hull=({hp[0]:.2f},{hp[1]:.2f},{hp[2]:.2f})")
+    print(f"  Ldrv={ld:.1f}deg  Rdrv={rd:.1f}deg")
+    print(f"  engaged={n_eng}  eq_v={max_ev:.4f}  max_v={max_v:.1f}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true")
-    parser.add_argument("--record", action="store_true")
     args = parser.parse_args()
-
     if args.debug:
         run_debug()
-    elif args.record:
-        run_record()
     else:
         run_gui()

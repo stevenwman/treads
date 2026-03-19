@@ -81,6 +81,18 @@ Constraint: solref=0.005 1, solimp=0.95 0.99 0.001
 - Drive/idler angle difference: <3 deg (well coupled)
 - Stable over 10+ seconds, no explosions
 
+## XY→XZ Plane Conversion (Y-axis hinge)
+
+When switching from XY plane (hinge about Z) to XZ plane (hinge about Y, gravity -Z):
+
+**Y-axis hinge positive = X toward -Z** (opposite to CCW in XZ). Negate all angles:
+- Initial hinge qpos: `qpos = -delta` (not `+delta`)
+- Link_0 quaternion: `(cos(-ang/2), 0, sin(-ang/2), 0)`
+- Engagement local angle: `local = world + spr_angle` (not `world - spr_angle`)
+- Anchor placement: `(R*cos(local), 0, R*sin(local))` in sprocket frame
+
+Everything else maps directly: `[1]` → `[2]` for position reads, `atan2(dy,dx)` → `atan2(dz,dx)`, cylinder `euler="90 0 0"` to align with Y.
+
 ## Next Steps
 
 - Build full tank: two mirrored tracks, hull, ground plane, differential steering
