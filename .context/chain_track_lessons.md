@@ -1,100 +1,91 @@
-# Chain Track Simulation Lessons
+# Tank Track Simulation in MuJoCo
 
-## What Works (Current Approach)
+## Architecture
 
-**Kinematic tree chain + continuously-updated engagement constraints.**
+**Kinematic tree chain + fixed-anchor apex-only engagement + hub collision.**
 
-- Chain links connected by **hinge joints in a kinematic tree** (link_0 = freejoint root, links 1-29 = nested children with hinge joints)
-- One `connect` equality constraint closes the loop (link_29 → link_0)
-- Sprocket engagement: one `connect` constraint per link per sprocket, **anchor updated every timestep** to follow the link along the arc
-- Engagement/disengagement is **position-based**: link within ±0.10 of SPROCKET_R and on the correct side of the sprocket
-- Anchor radius = SPROCKET_R (not actual distance)
+- Chain links: hinge joints in a kinematic tree (link_0 = freejoint root, rest nested)
+- One `connect` equality constraint closes the loop
+- Track in XZ plane, hinge axis Y, gravity -Z, floor at z=0
+- Sprockets are children of the hull body
+- Chain link trees are independent free bodies, coupled to hull only via engagement constraints
 
-### Critical Details
+## Sprocket Engagement
 
-1. **Loop closure anchor must be recomputed after setting initial shape.** MuJoCo auto-computes `eq_data[idx, 3:6]` (anchor2) from the initial body positions at XML parse time. If you later change qpos to bend the chain into a stadium, the auto-computed anchor2 is wrong (off by meters). Fix: after `mj_forward`, recompute anchor2 from the current world positions.
+Engagement constraints pin a link's center to a point on the sprocket at radius R. **Anchor is set once and held fixed** — this creates real constraint forces that transfer sprocket torque to the chain and ultimately to the ground.
 
-2. **Pre-seed engagement at t=0.** Use the known stadium geometry to determine which links start on arcs and set their engagement anchors immediately. This avoids force spikes from late engagement.
+### Apex-Only Engagement
+Only engage ~2-3 links at the deepest point of each arc (drive: `lx < sx - R*0.5`, idler: `lx > sx + R*0.5`). Links near the tangent transition points are NOT engaged — they ride on the sprocket hub via collision instead. This gives a stable engagement count (~3 per sprocket) and eliminates force discontinuities from rapid constraint toggling.
 
-3. **Continuously update engagement anchors.** Fixed-angle engagement (set anchor once, hold it) causes the chain to stall — the sprocket can't rotate past ~170 deg before the hinge chain locks up. Updating the anchor every step lets links slide along the arc while staying at radius R.
+### Disengagement
+Angle-based: store local angle at engagement, compute `world = local - spr_angle` each step, disengage when deviation from arc center exceeds ARC_HALF (π×0.40).
 
-4. **Use SPROCKET_R for anchor radius, not actual distance.** Using `dist` allows links to engage at wrong radii (e.g., 0.53 instead of 0.35), causing chain deformation. Use the ideal radius and tighten the engagement distance check to ±0.10.
+### Hub Collision
+Sprocket cylinders have collision enabled (`contype=1 conaffinity=2`) so chain links physically ride over them during transitions in/out of the engagement zone.
 
-5. **ARC_HALF = π × 0.40 works.** Smaller arc engagement zone allows links to disengage and hand off sooner, preventing chain lockup.
+## Key Implementation Details
 
-## Failed Approaches
-
-### 1. Contact-based sprocket drive
-- Sprocket teeth physically mesh with chain gaps via contact
-- Failed: MuJoCo constraint solver can't maintain chain integrity under contact forces
-- Pin constraint violations up to 0.5m
-
-### 2. Freejoint chain + equality constraints for everything
-- All links as freejoints, connect constraints for pins AND engagement
-- `connect` = ball joint (3 translational DOF, 0 rotational) → lateral wobble
-- Dual Z-offset constraints to emulate hinge → doubled constraint count
-- Solver overwhelmed with 120+ equality constraints
-
-### 3. Fixed-angle engagement (set anchor once, hold it)
-- Sprocket rotates ~170 deg then stalls — hinge chain acts as rigid brake
-- Links locked at fixed sprocket angles can't advance
-- Chain speed drops to 0 after initial rotation
-
-### 4. Engagement using actual distance instead of SPROCKET_R
-- Links engage at wrong radii when they drift from ideal path
-- Drive/idler speed mismatch (84 deg divergence)
-- Chain deforms: track error 0.37m
-
-## Key MuJoCo Facts
-
-- `eq_data[i, 0:3]` = anchor in body1 frame, `eq_data[i, 3:6]` = anchor in body2 frame
-- `data.eq_active` (not `model.eq_active`) in MuJoCo 3.6+
-- `connect` constraint = ball joint (pins a point, no rotational constraint)
-- MuJoCo auto-computes anchor2 at XML parse time from initial body positions — stale if you change qpos later
-- Collision: `(ct1 & ca2) || (ct2 & ca1)` — both directions checked
-- `contype=0 conaffinity=0` must be explicit on visual-only geoms (default inherits from `<default>`)
-- Cylinder collision: box-cylinder works, capsule-cylinder does NOT
-- Velocity actuators (`<velocity kv="...">`) for constant-speed drives
-- Kinematic tree + closed loop = one equality constraint for loop closure
-- Adding engagement equality constraints to kinematic tree bodies is fine IF anchors are updated every step (no constraint loop buildup)
-
-## Parameters That Work
-
+### Loop Closure Anchor
+MuJoCo auto-computes the second anchor (`eq_data[idx, 3:6]`) from body positions at XML parse time. After bending the chain via qpos, this is wrong by meters. Recompute after `mj_forward`:
+```python
+w1 = data.xpos[bid1] + data.xmat[bid1].reshape(3,3) @ model.eq_data[idx, 0:3]
+model.eq_data[idx, 3:6] = data.xmat[bid2].reshape(3,3).T @ (w1 - data.xpos[bid2])
 ```
-N_LINKS = 30
-SPROCKET_R = 0.35
-HALF_SPAN = 1.4
-TIMESTEP = 0.002
-TARGET_VEL = 1.0 rad/s
-ARC_HALF = π × 0.40
-kv = 50 (velocity servo gain)
-Engagement distance tolerance: ±0.10 from SPROCKET_R
-Solver: Newton, iterations=300, tolerance=1e-10, noslip=10
+
+### Pre-seed Engagement at t=0
+Determine which links start on arcs from stadium geometry. Set anchors at actual distance (not SPROCKET_R) for zero initial correction force. Runtime engagement uses SPROCKET_R with ±0.10 tolerance.
+
+### Y-axis Hinge Convention
+Positive Y rotation = X toward -Z. Negate all angles from `atan2(dz, dx)`:
+- Hinge qpos: `-delta`
+- Link_0 quat: `(cos(-ang/2), 0, sin(-ang/2), 0)`
+- Engagement: `local = world + spr_angle`
+- Disengagement: `world = local - spr_angle`
+
+## Collision Groups
+| Body | contype | conaffinity | Collides with |
+|------|---------|-------------|---------------|
+| Links | 2 | 1 | Ground, hubs |
+| Ground | 1 | 2 | Links |
+| Sprocket hubs | 1 | 2 | Links |
+| Hull | 0 | 0 | Nothing |
+
+## What Doesn't Work
+
+- **Continuously-updated anchors**: zero constraint force, sprocket spins freely, chain doesn't advance
+- **Engaging all arc links**: 10+ per sprocket, rapid toggling (eng=13→19→13), force discontinuities, hull oscillates
+- **Fixed anchors + large ARC_HALF (>π×0.5)**: chain stalls at ~170 deg, hinge tree locks up
+- **Freejoint chain + connect constraints for pins**: ball joints wobble, solver overwhelmed
+- **Contact-based sprocket teeth**: solver can't maintain chain integrity
+- **High sprocket height**: bottom treads float above ground, no traction
+
+## Performance
+
+### Timestep
+dt=0.004: same quality as 0.002 at 3x speed. dt=0.008 degrades constraints.
+
+### Rendering (WSL2)
+- Shadows: 56% of render time. Disable with `<quality shadowsize="0"/>`.
+- Long capsule geoms (grid lines): 8x slower. Use checker texture.
+- Offscreen: ~50-100ms/frame on WSL2 regardless of backend. GPU passthrough only for GUI viewer.
+
+### GUI Loop
+Cap steps per frame to avoid death spiral (sim slower than realtime → tries to catch up → falls further behind → infinite loop).
+
+## MuJoCo Facts
+- `eq_data[i, 0:3]` = anchor in body1, `[3:6]` = body2
+- `data.eq_active` not `model.eq_active` (MuJoCo 3.6)
+- `connect` = ball joint (position only, no rotation)
+- Collision check: `(ct1 & ca2) || (ct2 & ca1)`
+- Box-cylinder collision works. Capsule-cylinder does NOT.
+- `contype=0 conaffinity=0` must be explicit on visual geoms
+
+## Parameters
+```
+N_LINKS=30  SPROCKET_R=0.35  HALF_SPAN=1.4  TIMESTEP=0.004
+TARGET_VEL=1.0 rad/s  kv=200  Hull=20kg  ARC_HALF=π×0.40
+Engagement: apex-only, dist tolerance ±0.10
+Solver: Newton, iter=300, tol=1e-10, noslip=10
 Constraint: solref=0.005 1, solimp=0.95 0.99 0.001
+SPROCKET_Z = SPROCKET_R + 0.02
 ```
-
-## Resulting Performance
-
-- Chain speed: ~0.33 m/s sustained
-- Track error: 0.017 mean, 0.06 max
-- Constraint violation: 0.001
-- Drive/idler angle difference: <3 deg (well coupled)
-- Stable over 10+ seconds, no explosions
-
-## XY→XZ Plane Conversion (Y-axis hinge)
-
-When switching from XY plane (hinge about Z) to XZ plane (hinge about Y, gravity -Z):
-
-**Y-axis hinge positive = X toward -Z** (opposite to CCW in XZ). Negate all angles:
-- Initial hinge qpos: `qpos = -delta` (not `+delta`)
-- Link_0 quaternion: `(cos(-ang/2), 0, sin(-ang/2), 0)`
-- Engagement local angle: `local = world + spr_angle` (not `world - spr_angle`)
-- Anchor placement: `(R*cos(local), 0, R*sin(local))` in sprocket frame
-
-Everything else maps directly: `[1]` → `[2]` for position reads, `atan2(dy,dx)` → `atan2(dz,dx)`, cylinder `euler="90 0 0"` to align with Y.
-
-## Next Steps
-
-- Build full tank: two mirrored tracks, hull, ground plane, differential steering
-- Sprockets as children of hull body
-- Ground contact on tread links (contype/conaffinity groups to avoid link-link self-collision)

@@ -39,8 +39,8 @@ TRACK_GAUGE = 1.2         # Y distance between left/right track centers
 HULL_HALF_X = HALF_SPAN + 0.2
 HULL_HALF_Y = TRACK_GAUGE / 2 - 0.05
 HULL_HALF_Z = 0.12
-SPROCKET_Z = SPROCKET_R + 0.10  # sprocket center height above ground
-HULL_Z = SPROCKET_Z + 0.05      # hull center height
+SPROCKET_Z = SPROCKET_R + 0.02  # sprocket center height — low so bottom treads press into ground
+HULL_Z = SPROCKET_Z + 0.15      # hull center height (above sprockets)
 
 # Per-track sprocket defs: (local_name, x_offset)
 SPR_DEFS = [
@@ -87,28 +87,43 @@ def build_xml():
     a(f'  <option timestep="{TIMESTEP}" gravity="0 0 -9.81"'
       f' iterations="300" solver="Newton" tolerance="1e-10" noslip_iterations="10"/>')
     a('  <size nconmax="2000" njmax="6000"/>')
-    a('  <visual><global offwidth="1200" offheight="800"/></visual>')
+    a('  <visual><global offwidth="1920" offheight="1080"/><quality shadowsize="0" offsamples="1"/></visual>')
     a('  <default>')
     a('    <geom friction="0.8 0.01 0.01" condim="4" margin="0.005"/>')
     a('    <equality solref="0.005 1" solimp="0.95 0.99 0.001"/>')
     a('  </default>')
+    # Checkerboard ground texture
+    a('  <asset>')
+    a('    <texture name="grid" type="2d" builtin="checker" width="512" height="512"'
+      '     rgb1="0.4 0.45 0.4" rgb2="0.45 0.5 0.45"/>')
+    a('    <material name="grid_mat" texture="grid" texrepeat="10 10" texuniform="true"/>')
+    a('  </asset>')
     a('  <worldbody>')
     a('    <camera name="overview" pos="0 -5 3" xyaxes="1 0 0 0 0.3 1" fovy="50"/>')
     a('    <camera name="top" pos="0 0 6" xyaxes="1 0 0 0 1 0" fovy="60"/>')
     a('    <camera name="side" pos="-4 0 1.5" xyaxes="0 -1 0 0 0 1" fovy="50"/>')
-    a('    <light pos="0 -3 5" dir="0 0.5 -0.5" diffuse="0.8 0.8 0.8"/>')
-    a('    <light pos="3 3 5" dir="-0.3 -0.3 -1" diffuse="0.4 0.4 0.4"/>')
+    a('    <light pos="0 -3 6" dir="0 0.3 -0.7" diffuse="1 1 1" specular="0.3 0.3 0.3"/>')
     # Ground
-    a('    <geom name="floor" type="plane" size="10 10 0.1" rgba="0.4 0.5 0.4 1"'
-      '     contype="1" conaffinity="2"/>')  # collides with links (contype=2)
+    a('    <geom name="floor" type="plane" size="20 20 0.1" material="grid_mat"'
+      '     contype="1" conaffinity="2"/>')
     # RGB axes
-    a('    <geom type="capsule" fromto="0 0 0.001 0.5 0 0.001" size="0.008" rgba="1 0 0 0.8" contype="0" conaffinity="0"/>')
-    a('    <geom type="capsule" fromto="0 0 0.001 0 0.5 0.001" size="0.008" rgba="0 1 0 0.8" contype="0" conaffinity="0"/>')
-    a('    <geom type="capsule" fromto="0 0 0.001 0 0 0.5" size="0.008" rgba="0 0 1 0.8" contype="0" conaffinity="0"/>')
+    a('    <geom type="capsule" fromto="0 0 0.002 0.5 0 0.002" size="0.008" rgba="1 0 0 0.8" contype="0" conaffinity="0"/>')
+    a('    <geom type="capsule" fromto="0 0 0.002 0 0.5 0.002" size="0.008" rgba="0 1 0 0.8" contype="0" conaffinity="0"/>')
+    a('    <geom type="capsule" fromto="0 0 0.002 0 0 0.5" size="0.008" rgba="0 0 1 0.8" contype="0" conaffinity="0"/>')
+    # Obstacles
+    a('    <geom name="ramp" type="box" size="0.8 1.5 0.04" pos="4 0 0.04"'
+      '     euler="0 -5 0" rgba="0.6 0.4 0.3 1" contype="1" conaffinity="2"/>')
+    a('    <geom name="bump" type="box" size="0.3 1.5 0.06" pos="7 0 0.06"'
+      '     rgba="0.5 0.35 0.3 1" contype="1" conaffinity="2"/>')
+    a('    <geom name="step" type="box" size="1.0 1.5 0.10" pos="10 0 0.10"'
+      '     rgba="0.55 0.4 0.35 1" contype="1" conaffinity="2"/>')
 
     # ── Hull ──
     a(f'    <body name="hull" pos="0 0 {HULL_Z}">')
     a(f'      <freejoint name="hull_jnt"/>')
+    # Isometric tracking camera attached to hull
+    a(f'      <camera name="tracking" pos="-3 -3 2.5" xyaxes="1 -1 0 0.3 0.3 1"'
+      f' fovy="45" mode="track"/>')
     a(f'      <geom name="hull_box" type="box" size="{HULL_HALF_X} {HULL_HALF_Y} {HULL_HALF_Z}"'
       f' rgba="0.3 0.35 0.3 1" mass="20.0" contype="0" conaffinity="0"/>')
 
@@ -126,8 +141,9 @@ def build_xml():
                   f' stiffness="{TENSION_K}" damping="80" range="-0.05 0.3"/>')
             a(f'        <joint name="{full}_hinge" type="hinge" axis="0 1 0" damping="0.2"/>')
             col = {"drive": "0.7 0.2 0.2 1", "idler": "0.2 0.2 0.7 1", "mid": "0.2 0.6 0.2 1"}[spr_name]
+            # Hub: collision enabled so chain links ride on it during transitions
             a(f'        <geom type="cylinder" size="{HUB_R} {HUB_HALF_Y}" euler="90 0 0"'
-              f' rgba="{col}" contype="0" conaffinity="0"/>')
+              f' rgba="{col}" contype="1" conaffinity="2"/>')
             a(f'      </body>')
 
     a('    </body>')  # end hull
@@ -310,14 +326,30 @@ def update_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids):
                 dx, dz = lx - sx, lz - sz
                 dist = math.sqrt(dx * dx + dz * dz)
 
+                # Only engage links near the apex of the arc (deepest wrap point)
+                # Drive apex: directly left of sprocket (angle ≈ π)
+                # Idler apex: directly right of sprocket (angle ≈ 0)
                 on_arc = False
                 if spr_name == "drive":
-                    on_arc = lx < sx + LINK_PITCH * 0.3
+                    on_arc = lx < sx - SPROCKET_R * 0.5  # must be well past center
                 elif spr_name == "idler":
-                    on_arc = lx > sx - LINK_PITCH * 0.3
+                    on_arc = lx > sx + SPROCKET_R * 0.5
                 on_arc = on_arc and abs(dist - SPROCKET_R) < 0.10
 
-                if on_arc:
+                if key in _engaged:
+                    # Already engaged — check angle-based disengagement
+                    local_angle = _engaged[key]
+                    # Y-axis: world = local - spr_angle
+                    world_angle = _norm_angle(local_angle - spr_angle)
+                    if spr_name == "drive":
+                        off = abs(_norm_angle(world_angle - math.pi))
+                    else:  # idler
+                        off = abs(_norm_angle(world_angle))
+                    if off > ARC_HALF:
+                        del _engaged[key]
+                        data.eq_active[eq_idx] = 0
+                elif on_arc:
+                    # New engagement — set anchor ONCE (fixed)
                     world_angle = math.atan2(dz, dx)
                     local_angle = _norm_angle(world_angle + spr_angle)
                     model.eq_data[eq_idx, 0] = SPROCKET_R * math.cos(local_angle)
@@ -327,8 +359,6 @@ def update_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids):
                     data.eq_active[eq_idx] = 1
                     _engaged[key] = local_angle
                 else:
-                    if key in _engaged:
-                        del _engaged[key]
                     data.eq_active[eq_idx] = 0
 
 
@@ -434,11 +464,53 @@ def run_debug():
     print(f"  engaged={n_eng}  eq_v={max_ev:.4f}  max_v={max_v:.1f}")
 
 
+def run_record():
+    """Record mp4 from the tracking camera."""
+    xml = build_xml()
+    model = mujoco.MjModel.from_xml_string(xml)
+    data = mujoco.MjData(model)
+    mujoco.mj_forward(model, data)
+    eng_ids, link_bids, spr_bids, jnt_ids, act_ids = _init_all(model, data)
+
+    W, H = 1280, 720
+    FPS = 24
+    SIM_DURATION = 15.0  # seconds of sim time
+    frames_per_step = max(1, round(1.0 / (FPS * TIMESTEP)))  # steps between frames
+
+    renderer = mujoco.Renderer(model, width=W, height=H)
+
+    n_steps = int(SIM_DURATION / TIMESTEP)
+    n_frames = n_steps // frames_per_step
+
+    import imageio
+    out = "/home/sman/Work/CMU/Research/track_synthesis/tank.mp4"
+    writer = imageio.get_writer(out, fps=FPS, codec='libx264', quality=8)
+
+    from tqdm import tqdm
+    pbar = tqdm(total=n_frames, desc="Recording", unit="frame",
+                bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]")
+
+    for step in range(n_steps):
+        step_sim(model, data, eng_ids, link_bids, spr_bids, jnt_ids, act_ids)
+
+        if step % frames_per_step == 0:
+            renderer.update_scene(data, camera="tracking")
+            writer.append_data(renderer.render())
+            pbar.update(1)
+
+    pbar.close()
+    writer.close()
+    print(f"Saved {out} ({n_frames} frames, {n_frames/FPS:.1f}s)")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--record", action="store_true")
     args = parser.parse_args()
     if args.debug:
         run_debug()
+    elif args.record:
+        run_record()
     else:
         run_gui()

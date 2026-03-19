@@ -12,3 +12,4 @@ wheels/
 
 .claude
 MUJOCO_LOG.TXT
+*.mp4

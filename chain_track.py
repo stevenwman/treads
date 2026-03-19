@@ -111,7 +111,7 @@ def build_xml():
         col = {"drive": "0.7 0.2 0.2 1", "idler": "0.2 0.2 0.7 1", "mid": "0.2 0.6 0.2 1"}[name]
         # Cylinder default axis is Z; rotate 90 about X to align with Y
         a(f'      <geom type="cylinder" size="{HUB_R} {HUB_HALF_Y}" euler="90 0 0" rgba="{col}"'
-          f' contype="0" conaffinity="0"/>')
+          f' contype="1" conaffinity="2"/>')
         if name != "mid":
             for mi in range(12):
                 th = 2 * math.pi * mi / 12
@@ -133,7 +133,7 @@ def build_xml():
     a(f'    <body name="link_0" pos="{xl:.6f} 0 {wz:.6f}" quat="{qw:.6f} 0 {qy:.6f} 0">')
     a(f'      <freejoint name="link_0_jnt"/>')
     a(f'      <geom type="box" size="{half_len:.4f} {LINK_WIDTH} {LINK_THICK}"'
-      f' rgba="1 0.2 0.2 1" mass="0.05" contype="0" conaffinity="0"/>')
+      f' rgba="1 0.2 0.2 1" mass="0.05" contype="2" conaffinity="1"/>')
     a(f'      <geom type="sphere" size="0.015" pos="{LINK_PITCH/2:.4f} 0 0"'
       f' rgba="0 1 0 0.5" contype="0" conaffinity="0"/>')
     a(f'      <geom type="sphere" size="0.015" pos="{-LINK_PITCH/2:.4f} 0 0"'
@@ -148,7 +148,7 @@ def build_xml():
         a(f'        <joint name="hinge_{i}" type="hinge" axis="0 1 0"'
           f' pos="{-LINK_PITCH/2:.6f} 0 0" damping="0.05"/>')
         a(f'        <geom type="box" size="{half_len:.4f} {LINK_WIDTH} {LINK_THICK}"'
-          f' rgba="{col}" mass="0.05" contype="0" conaffinity="0"/>')
+          f' rgba="{col}" mass="0.05" contype="2" conaffinity="1"/>')
         a(f'        <geom type="sphere" size="0.015" pos="{LINK_PITCH/2:.4f} 0 0"'
           f' rgba="0 1 0 0.5" contype="0" conaffinity="0"/>')
         a(f'        <geom type="sphere" size="0.015" pos="{-LINK_PITCH/2:.4f} 0 0"'
@@ -287,18 +287,29 @@ def update_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids):
             dx, dz = lx - sx, lz - sz
             dist = math.sqrt(dx * dx + dz * dz)
 
+            # Apex-only engagement: only near deepest wrap point
             on_arc = False
             if name == "drive":
-                on_arc = lx < sx + LINK_PITCH * 0.3
+                on_arc = lx < sx - SPROCKET_R * 0.5
             elif name == "idler":
-                on_arc = lx > sx - LINK_PITCH * 0.3
+                on_arc = lx > sx + SPROCKET_R * 0.5
             on_arc = on_arc and abs(dist - SPROCKET_R) < 0.10
 
-            if on_arc:
+            if key in _engaged:
+                # Already engaged — angle-based disengagement
+                local_angle = _engaged[key]
+                world_angle = _norm_angle(local_angle - spr_angle)
+                if name == "drive":
+                    off = abs(_norm_angle(world_angle - math.pi))
+                else:
+                    off = abs(_norm_angle(world_angle))
+                if off > ARC_HALF:
+                    del _engaged[key]
+                    data.eq_active[eq_idx] = 0
+            elif on_arc:
+                # New engagement — fixed anchor
                 world_angle = math.atan2(dz, dx)
-                # Y-axis: local = world + spr_angle
                 local_angle = _norm_angle(world_angle + spr_angle)
-
                 model.eq_data[eq_idx, 0] = SPROCKET_R * math.cos(local_angle)
                 model.eq_data[eq_idx, 1] = 0.0
                 model.eq_data[eq_idx, 2] = SPROCKET_R * math.sin(local_angle)
@@ -306,8 +317,6 @@ def update_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids):
                 data.eq_active[eq_idx] = 1
                 _engaged[key] = local_angle
             else:
-                if key in _engaged:
-                    del _engaged[key]
                 data.eq_active[eq_idx] = 0
 
 
