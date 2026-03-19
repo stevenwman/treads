@@ -22,7 +22,7 @@ SPROCKET_R = 0.35
 HALF_SPAN = 1.4
 LINK_THICK = 0.02
 LINK_WIDTH = 0.10
-TIMESTEP = 0.004
+TIMESTEP = 0.002
 TARGET_VEL = 1.0
 TENSION_K = 80.0
 ARC_HALF = math.pi * 0.40
@@ -85,12 +85,15 @@ def build_xml():
 
     a('<mujoco model="tank">')
     a(f'  <option timestep="{TIMESTEP}" gravity="0 0 -9.81"'
-      f' iterations="300" solver="Newton" tolerance="1e-10" noslip_iterations="10"/>')
+      f' integrator="implicitfast" solver="Newton" cone="elliptic"'
+      f' iterations="300" tolerance="1e-8" noslip_iterations="30"'
+      f' impratio="2"/>')
     a('  <size nconmax="2000" njmax="6000"/>')
     a('  <visual><global offwidth="1920" offheight="1080"/><quality shadowsize="0" offsamples="1"/></visual>')
     a('  <default>')
-    a('    <geom friction="0.8 0.01 0.01" condim="4" margin="0.005"/>')
-    a('    <equality solref="0.005 1" solimp="0.95 0.99 0.001"/>')
+    a('    <geom friction="1.0 0.005 0.005" condim="3" margin="0.002"'
+      '     solref="0.004 1" solimp="0.95 0.99 0.001"/>')
+    a('    <equality solref="0.01 1" solimp="0.9 0.95 0.001"/>')
     a('  </default>')
     # Checkerboard ground texture
     a('  <asset>')
@@ -110,13 +113,22 @@ def build_xml():
     a('    <geom type="capsule" fromto="0 0 0.002 0.5 0 0.002" size="0.008" rgba="1 0 0 0.8" contype="0" conaffinity="0"/>')
     a('    <geom type="capsule" fromto="0 0 0.002 0 0.5 0.002" size="0.008" rgba="0 1 0 0.8" contype="0" conaffinity="0"/>')
     a('    <geom type="capsule" fromto="0 0 0.002 0 0 0.5" size="0.008" rgba="0 0 1 0.8" contype="0" conaffinity="0"/>')
-    # Obstacles
-    a('    <geom name="ramp" type="box" size="0.8 1.5 0.04" pos="4 0 0.04"'
-      '     euler="0 -5 0" rgba="0.6 0.4 0.3 1" contype="1" conaffinity="2"/>')
-    a('    <geom name="bump" type="box" size="0.3 1.5 0.06" pos="7 0 0.06"'
-      '     rgba="0.5 0.35 0.3 1" contype="1" conaffinity="2"/>')
-    a('    <geom name="step" type="box" size="1.0 1.5 0.10" pos="10 0 0.10"'
+    # Obstacles — angled approach faces so treads can climb
+    # Ramp: gentle 8deg slope, 3cm rise
+    a('    <geom name="ramp" type="box" size="1.0 1.5 0.03" pos="4 0 0.03"'
+      '     euler="0 -8 0" rgba="0.6 0.4 0.3 1" contype="1" conaffinity="2"/>')
+    # Bump: two wedges forming a ridge, 5cm tall
+    a('    <geom name="bump_up" type="box" size="0.5 1.5 0.05" pos="6.7 0 0.05"'
+      '     euler="0 -15 0" rgba="0.5 0.35 0.3 1" contype="1" conaffinity="2"/>')
+    a('    <geom name="bump_dn" type="box" size="0.5 1.5 0.05" pos="7.7 0 0.05"'
+      '     euler="0 15 0" rgba="0.5 0.35 0.3 1" contype="1" conaffinity="2"/>')
+    # Step: ramp up + flat top + ramp down, 8cm tall
+    a('    <geom name="step_up" type="box" size="0.6 1.5 0.08" pos="9.5 0 0.08"'
+      '     euler="0 -12 0" rgba="0.55 0.4 0.35 1" contype="1" conaffinity="2"/>')
+    a('    <geom name="step_top" type="box" size="1.0 1.5 0.08" pos="10.7 0 0.08"'
       '     rgba="0.55 0.4 0.35 1" contype="1" conaffinity="2"/>')
+    a('    <geom name="step_dn" type="box" size="0.6 1.5 0.08" pos="12.3 0 0.08"'
+      '     euler="0 12 0" rgba="0.55 0.4 0.35 1" contype="1" conaffinity="2"/>')
 
     # ── Hull ──
     a(f'    <body name="hull" pos="0 0 {HULL_Z}">')
@@ -124,6 +136,8 @@ def build_xml():
     # Isometric tracking camera attached to hull
     a(f'      <camera name="tracking" pos="-3 -3 2.5" xyaxes="1 -1 0 0.3 0.3 1"'
       f' fovy="45" mode="track"/>')
+    a(f'      <camera name="front" pos="4 0 0.3" xyaxes="0 1 0 0 0 1"'
+      f' fovy="60" mode="track"/>')
     a(f'      <geom name="hull_box" type="box" size="{HULL_HALF_X} {HULL_HALF_Y} {HULL_HALF_Z}"'
       f' rgba="0.3 0.35 0.3 1" mass="20.0" contype="0" conaffinity="0"/>')
 
@@ -139,7 +153,7 @@ def build_xml():
             if spr_name == "idler":
                 a(f'        <joint name="{full}_slide" type="slide" axis="1 0 0"'
                   f' stiffness="{TENSION_K}" damping="80" range="-0.05 0.3"/>')
-            a(f'        <joint name="{full}_hinge" type="hinge" axis="0 1 0" damping="0.2"/>')
+            a(f'        <joint name="{full}_hinge" type="hinge" axis="0 1 0" damping="2.0"/>')
             col = {"drive": "0.7 0.2 0.2 1", "idler": "0.2 0.2 0.7 1", "mid": "0.2 0.6 0.2 1"}[spr_name]
             # Hub: collision enabled so chain links ride on it during transitions
             a(f'        <geom type="cylinder" size="{HUB_R} {HUB_HALF_Y}" euler="90 0 0"'
@@ -170,7 +184,8 @@ def build_xml():
         for i in range(1, N_LINKS):
             a(f'      <body name="{side}_link_{i}" pos="{LINK_PITCH:.6f} 0 0">')
             a(f'        <joint name="{side}_hinge_{i}" type="hinge" axis="0 1 0"'
-              f' pos="{-LINK_PITCH/2:.6f} 0 0" damping="0.05"/>')
+              f' pos="{-LINK_PITCH/2:.6f} 0 0" damping="0.2"'
+              f' limited="true" range="-1.2 1.2"/>')
             a(f'        <geom type="box" size="{half_len:.4f} {LINK_WIDTH} {LINK_THICK}"'
               f' rgba="0.9 0.6 0.1 1" mass="0.05" contype="2" conaffinity="1"/>')
 
@@ -186,7 +201,7 @@ def build_xml():
         for spr_name, _ in SPR_DEFS:
             full = f"{side}_{spr_name}"
             a(f'    <velocity name="{full}_motor" joint="{full}_hinge"'
-              f' kv="200" ctrllimited="true" ctrlrange="-5 5"/>')
+              f' kv="500" ctrllimited="true" ctrlrange="-5 5"/>')
     a('  </actuator>')
 
     # Equality constraints
@@ -433,35 +448,96 @@ def run_debug():
     eng_ids, link_bids, spr_bids, jnt_ids, act_ids = _init_all(model, data)
     hull_bid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "hull")
 
-    for step in range(5000):
+    # Obstacle positions for progress tracking
+    obstacles = [("ramp", 4.0, 0.03), ("bump", 7.2, 0.05), ("step", 10.7, 0.08)]
+    last_obstacle = ""
+
+    # Run longer to reach obstacles
+    n_steps = 10000
+    history = []
+
+    for step in range(n_steps):
         step_sim(model, data, eng_ids, link_bids, spr_bids, jnt_ids, act_ids)
 
+        t = data.time
+        hp = data.xpos[hull_bid]
         max_v = np.max(np.abs(data.qvel))
         max_ev = np.max(np.abs(data.efc_pos[:data.nefc])) if data.nefc > 0 else 0
         n_eng = sum(1 for idx in eng_ids.values() if data.eq_active[idx])
-        t = data.time
-        hp = data.xpos[hull_bid]
 
-        # Per-side drive angles
-        ld = math.degrees(data.qpos[model.jnt_qposadr[jnt_ids[("left", "drive")]]])
-        rd = math.degrees(data.qpos[model.jnt_qposadr[jnt_ids[("right", "drive")]]])
         lv = data.qvel[model.jnt_dofadr[jnt_ids[("left", "drive")]]]
         rv = data.qvel[model.jnt_dofadr[jnt_ids[("right", "drive")]]]
+        hull_vx = data.cvel[hull_bid][3]  # linear velocity X
 
-        if step < 10 or step % 200 == 0 or max_v > 200 or np.any(np.isnan(data.qpos)):
-            print(f"step {step:4d}  t={t:.2f}  "
-                  f"v={max_v:6.1f}  eq_v={max_ev:.4f}  eng={n_eng:2d}  "
-                  f"Ldrv={ld:6.1f}d({lv:5.2f}) Rdrv={rd:6.1f}d({rv:5.2f})  "
-                  f"hull=({hp[0]:.2f},{hp[1]:.2f},{hp[2]:.2f})")
+        # Ground contact: total normal force and friction force on treads
+        total_normal = 0.0
+        total_friction = 0.0
+        n_ground_contacts = 0
+        for c in range(data.ncon):
+            con = data.contact[c]
+            g1n = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, con.geom1)
+            g2n = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, con.geom2)
+            ground_names = ("floor", "ramp", "bump_up", "bump_dn", "step_up", "step_top", "step_dn")
+            if g1n in ground_names or g2n in ground_names:
+                f = np.zeros(6)
+                mujoco.mj_contactForce(model, data, c, f)
+                total_normal += abs(f[0])  # normal
+                total_friction += np.linalg.norm(f[1:3])  # tangential
+                n_ground_contacts += 1
+
+        # Check obstacle progress
+        current_obstacle = ""
+        for oname, ox, oh in obstacles:
+            if hp[0] > ox - 1.0:
+                current_obstacle = oname
+
+        rec = {'t': t, 'hx': hp[0], 'hz': hp[2], 'hvx': hull_vx,
+               'lv': lv, 'rv': rv, 'eng': n_eng, 'eq_v': max_ev, 'max_v': max_v,
+               'ncon': n_ground_contacts, 'fn': total_normal, 'ff': total_friction,
+               'obs': current_obstacle}
+        history.append(rec)
+
+        do_print = step < 5 or step % 200 == 0 or max_v > 200
+        if current_obstacle != last_obstacle:
+            do_print = True
+            last_obstacle = current_obstacle
+        if np.any(np.isnan(data.qpos)):
+            do_print = True
+
+        if do_print:
+            obs_str = f" [{current_obstacle}]" if current_obstacle else ""
+            print(f"t={t:5.1f}  hx={hp[0]:5.2f} hz={hp[2]:4.2f}  "
+                  f"hvx={hull_vx:5.2f}m/s  "
+                  f"drv=({lv:4.1f},{rv:4.1f})r/s  eng={n_eng:2d}  "
+                  f"eq_v={max_ev:.3f}  v={max_v:5.1f}  "
+                  f"gnd={n_ground_contacts:2d} fn={total_normal:6.0f} ff={total_friction:5.0f}"
+                  f"{obs_str}")
             if np.any(np.isnan(data.qpos)):
                 print(">>> NaN")
                 break
 
+    # Summary with obstacle progress
     print()
     print("=== SUMMARY ===")
-    print(f"  t={data.time:.2f}  hull=({hp[0]:.2f},{hp[1]:.2f},{hp[2]:.2f})")
-    print(f"  Ldrv={ld:.1f}deg  Rdrv={rd:.1f}deg")
-    print(f"  engaged={n_eng}  eq_v={max_ev:.4f}  max_v={max_v:.1f}")
+    print(f"  t={t:.1f}s  hull=({hp[0]:.2f}, {hp[2]:.2f})")
+    print(f"  Obstacles:")
+    for oname, ox, oh in obstacles:
+        reached = any(r['hx'] > ox + 1.0 for r in history)
+        max_hx_near = max((r['hx'] for r in history if abs(r['hx'] - ox) < 2.0), default=0)
+        if reached:
+            print(f"    {oname} (x={ox}, h={oh}m): CLEARED")
+        elif max_hx_near > ox - 1.5:
+            print(f"    {oname} (x={ox}, h={oh}m): STUCK (got to x={max_hx_near:.2f})")
+        else:
+            print(f"    {oname} (x={ox}, h={oh}m): NOT REACHED")
+    # Hull velocity over time
+    if len(history) > 100:
+        early = [r['hvx'] for r in history[50:150]]
+        late = [r['hvx'] for r in history[-200:]]
+        print(f"  Avg hull vx: early={np.mean(early):.3f} late={np.mean(late):.3f} m/s")
+        print(f"  Avg ground contacts: {np.mean([r['ncon'] for r in history[-200:]]):.0f}")
+        print(f"  Avg normal force: {np.mean([r['fn'] for r in history[-200:]]):.0f}N")
+        print(f"  Avg friction force: {np.mean([r['ff'] for r in history[-200:]]):.0f}N")
 
 
 def run_record():
@@ -474,7 +550,7 @@ def run_record():
 
     W, H = 1280, 720
     FPS = 24
-    SIM_DURATION = 15.0  # seconds of sim time
+    SIM_DURATION = 30.0  # seconds of sim time
     frames_per_step = max(1, round(1.0 / (FPS * TIMESTEP)))  # steps between frames
 
     renderer = mujoco.Renderer(model, width=W, height=H)
@@ -494,7 +570,7 @@ def run_record():
         step_sim(model, data, eng_ids, link_bids, spr_bids, jnt_ids, act_ids)
 
         if step % frames_per_step == 0:
-            renderer.update_scene(data, camera="tracking")
+            renderer.update_scene(data, camera="front")
             writer.append_data(renderer.render())
             pbar.update(1)
 
