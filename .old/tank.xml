@@ -1,0 +1,196 @@
+<mujoco model="tank">
+  <option timestep="0.002" gravity="0 0 -9.81" solver="Newton" iterations="100"/>
+
+  <default>
+    <geom condim="3"/>
+    <joint damping="0.01"/>
+  </default>
+
+  <asset>
+    <texture type="2d" name="grid" builtin="checker" width="512" height="512"
+             rgb1="0.2 0.2 0.2" rgb2="0.3 0.3 0.3"/>
+    <material name="ground_mat" texture="grid" texrepeat="10 10"/>
+  </asset>
+
+  <worldbody>
+    <!-- Ground for track links (with friction) -->
+    <geom type="plane" size="50 50 1" material="ground_mat"
+          friction="1.0 0.005 0.001" condim="3" contype="1" conaffinity="2"/>
+    <!-- Ground for chassis (frictionless, condim=1 on both sides) -->
+    <geom type="plane" size="50 50 1"
+          condim="1" contype="8" conaffinity="4" rgba="0 0 0 0"/>
+
+    <!-- Chassis -->
+    <body name="chassis" pos="0 0 0.16">
+      <freejoint name="chassis_free"/>
+      <geom type="box" size="0.3 0.2 0.08" mass="20"
+            condim="1" contype="4" conaffinity="8" rgba="0.3 0.35 0.3 1"/>
+      <!-- Sensor site -->
+      <site name="chassis_center" pos="0 0 0" size="0.01"/>
+      <!-- Visual-only sprocket and idler cylinders -->
+      <geom name="sprocket_L" type="cylinder" size="0.08 0.03"
+            pos="0.28 0.22 0" euler="90 0 0"
+            contype="0" conaffinity="0" rgba="0.4 0.4 0.4 1"/>
+      <geom name="sprocket_R" type="cylinder" size="0.08 0.03"
+            pos="0.28 -0.22 0" euler="90 0 0"
+            contype="0" conaffinity="0" rgba="0.4 0.4 0.4 1"/>
+      <geom name="idler_L" type="cylinder" size="0.064 0.03"
+            pos="-0.28 0.22 0" euler="90 0 0"
+            contype="0" conaffinity="0" rgba="0.4 0.4 0.4 1"/>
+      <geom name="idler_R" type="cylinder" size="0.064 0.03"
+            pos="-0.28 -0.22 0" euler="90 0 0"
+            contype="0" conaffinity="0" rgba="0.4 0.4 0.4 1"/>
+    </body>
+
+    <!-- Left track -->
+    <body mocap="true" name="ghost_L_0" pos="-0.28 0.22 0.08" quat="1 0 -0 0">
+      <geom type="box" size="0.1 0.04 0.015"
+            contype="0" conaffinity="0" rgba="0 1 0 0.15"/>
+    </body>
+    <body name="link_L_0" pos="-0.28 0.22 0.08" quat="1 0 -0 0">
+      <freejoint name="link_L_0_free"/>
+      <geom type="box" size="0.1 0.04 0.015" mass="0.2"
+            friction="1.5 0.005 0.001" contype="2" conaffinity="1" rgba="0.25 0.25 0.25 1"/>
+    </body>
+    <body mocap="true" name="ghost_L_1" pos="0.044531 0.22 0.08" quat="1 0 -0 0">
+      <geom type="box" size="0.1 0.04 0.015"
+            contype="0" conaffinity="0" rgba="0 1 0 0.15"/>
+    </body>
+    <body name="link_L_1" pos="0.044531 0.22 0.08" quat="1 0 -0 0">
+      <freejoint name="link_L_1_free"/>
+      <geom type="box" size="0.1 0.04 0.015" mass="0.2"
+            friction="1.5 0.005 0.001" contype="2" conaffinity="1" rgba="0.25 0.25 0.25 1"/>
+    </body>
+    <body mocap="true" name="ghost_L_2" pos="0.351772 0.22 0.124662" quat="0.849037 0 -0.528334 0">
+      <geom type="box" size="0.1 0.04 0.015"
+            contype="0" conaffinity="0" rgba="0 1 0 0.15"/>
+    </body>
+    <body name="link_L_2" pos="0.351772 0.22 0.124662" quat="0.849037 0 -0.528334 0">
+      <freejoint name="link_L_2_free"/>
+      <geom type="box" size="0.1 0.04 0.015" mass="0.2"
+            friction="1.5 0.005 0.001" contype="2" conaffinity="1" rgba="0.25 0.25 0.25 1"/>
+    </body>
+    <body mocap="true" name="ghost_L_3" pos="0.117735 0.22 0.24" quat="0 0 -1 0">
+      <geom type="box" size="0.1 0.04 0.015"
+            contype="0" conaffinity="0" rgba="0 1 0 0.15"/>
+    </body>
+    <body name="link_L_3" pos="0.117735 0.22 0.24" quat="0 0 -1 0">
+      <freejoint name="link_L_3_free"/>
+      <geom type="box" size="0.1 0.04 0.015" mass="0.2"
+            friction="1.5 0.005 0.001" contype="2" conaffinity="1" rgba="0.25 0.25 0.25 1"/>
+    </body>
+    <body mocap="true" name="ghost_L_4" pos="-0.206796 0.22 0.24" quat="0 0 -1 0">
+      <geom type="box" size="0.1 0.04 0.015"
+            contype="0" conaffinity="0" rgba="0 1 0 0.15"/>
+    </body>
+    <body name="link_L_4" pos="-0.206796 0.22 0.24" quat="0 0 -1 0">
+      <freejoint name="link_L_4_free"/>
+      <geom type="box" size="0.1 0.04 0.015" mass="0.2"
+            friction="1.5 0.005 0.001" contype="2" conaffinity="1" rgba="0.25 0.25 0.25 1"/>
+    </body>
+
+    <!-- Right track -->
+    <body mocap="true" name="ghost_R_0" pos="-0.28 -0.22 0.08" quat="1 0 -0 0">
+      <geom type="box" size="0.1 0.04 0.015"
+            contype="0" conaffinity="0" rgba="0 1 0 0.15"/>
+    </body>
+    <body name="link_R_0" pos="-0.28 -0.22 0.08" quat="1 0 -0 0">
+      <freejoint name="link_R_0_free"/>
+      <geom type="box" size="0.1 0.04 0.015" mass="0.2"
+            friction="1.5 0.005 0.001" contype="2" conaffinity="1" rgba="0.25 0.25 0.25 1"/>
+    </body>
+    <body mocap="true" name="ghost_R_1" pos="0.044531 -0.22 0.08" quat="1 0 -0 0">
+      <geom type="box" size="0.1 0.04 0.015"
+            contype="0" conaffinity="0" rgba="0 1 0 0.15"/>
+    </body>
+    <body name="link_R_1" pos="0.044531 -0.22 0.08" quat="1 0 -0 0">
+      <freejoint name="link_R_1_free"/>
+      <geom type="box" size="0.1 0.04 0.015" mass="0.2"
+            friction="1.5 0.005 0.001" contype="2" conaffinity="1" rgba="0.25 0.25 0.25 1"/>
+    </body>
+    <body mocap="true" name="ghost_R_2" pos="0.351772 -0.22 0.124662" quat="0.849037 0 -0.528334 0">
+      <geom type="box" size="0.1 0.04 0.015"
+            contype="0" conaffinity="0" rgba="0 1 0 0.15"/>
+    </body>
+    <body name="link_R_2" pos="0.351772 -0.22 0.124662" quat="0.849037 0 -0.528334 0">
+      <freejoint name="link_R_2_free"/>
+      <geom type="box" size="0.1 0.04 0.015" mass="0.2"
+            friction="1.5 0.005 0.001" contype="2" conaffinity="1" rgba="0.25 0.25 0.25 1"/>
+    </body>
+    <body mocap="true" name="ghost_R_3" pos="0.117735 -0.22 0.24" quat="0 0 -1 0">
+      <geom type="box" size="0.1 0.04 0.015"
+            contype="0" conaffinity="0" rgba="0 1 0 0.15"/>
+    </body>
+    <body name="link_R_3" pos="0.117735 -0.22 0.24" quat="0 0 -1 0">
+      <freejoint name="link_R_3_free"/>
+      <geom type="box" size="0.1 0.04 0.015" mass="0.2"
+            friction="1.5 0.005 0.001" contype="2" conaffinity="1" rgba="0.25 0.25 0.25 1"/>
+    </body>
+    <body mocap="true" name="ghost_R_4" pos="-0.206796 -0.22 0.24" quat="0 0 -1 0">
+      <geom type="box" size="0.1 0.04 0.015"
+            contype="0" conaffinity="0" rgba="0 1 0 0.15"/>
+    </body>
+    <body name="link_R_4" pos="-0.206796 -0.22 0.24" quat="0 0 -1 0">
+      <freejoint name="link_R_4_free"/>
+      <geom type="box" size="0.1 0.04 0.015" mass="0.2"
+            friction="1.5 0.005 0.001" contype="2" conaffinity="1" rgba="0.25 0.25 0.25 1"/>
+    </body>
+
+    <!-- Ramp obstacle -->
+    <body pos="2 0 0.02" euler="0 15 0">
+      <geom type="box" size="0.25 1 0.015" friction="1.5 0.005 0.001"
+            condim="3" contype="1" conaffinity="2" rgba="0.5 0.4 0.3 1"/>
+      <geom type="box" size="0.25 1 0.015"
+            condim="1" contype="8" conaffinity="4" rgba="0 0 0 0"/>
+    </body>
+    <!-- Small bump -->
+    <body pos="4 0 0.01">
+      <geom type="box" size="0.15 1 0.01" friction="1.5 0.005 0.001"
+            condim="3" contype="1" conaffinity="2" rgba="0.5 0.4 0.3 1"/>
+      <geom type="box" size="0.15 1 0.01"
+            condim="1" contype="8" conaffinity="4" rgba="0 0 0 0"/>
+    </body>
+  </worldbody>
+
+  <equality>
+    <weld body1="ghost_L_0" body2="link_L_0"
+          solref="0.002 1.0" solimp="0.95 0.99 0.001"/>
+    <weld body1="ghost_L_1" body2="link_L_1"
+          solref="0.002 1.0" solimp="0.95 0.99 0.001"/>
+    <weld body1="ghost_L_2" body2="link_L_2"
+          solref="0.002 1.0" solimp="0.95 0.99 0.001"/>
+    <weld body1="ghost_L_3" body2="link_L_3"
+          solref="0.002 1.0" solimp="0.95 0.99 0.001"/>
+    <weld body1="ghost_L_4" body2="link_L_4"
+          solref="0.002 1.0" solimp="0.95 0.99 0.001"/>
+    <weld body1="ghost_R_0" body2="link_R_0"
+          solref="0.002 1.0" solimp="0.95 0.99 0.001"/>
+    <weld body1="ghost_R_1" body2="link_R_1"
+          solref="0.002 1.0" solimp="0.95 0.99 0.001"/>
+    <weld body1="ghost_R_2" body2="link_R_2"
+          solref="0.002 1.0" solimp="0.95 0.99 0.001"/>
+    <weld body1="ghost_R_3" body2="link_R_3"
+          solref="0.002 1.0" solimp="0.95 0.99 0.001"/>
+    <weld body1="ghost_R_4" body2="link_R_4"
+          solref="0.002 1.0" solimp="0.95 0.99 0.001"/>
+  </equality>
+
+  <contact>
+    <exclude body1="chassis" body2="link_L_0"/>
+    <exclude body1="chassis" body2="link_L_1"/>
+    <exclude body1="chassis" body2="link_L_2"/>
+    <exclude body1="chassis" body2="link_L_3"/>
+    <exclude body1="chassis" body2="link_L_4"/>
+    <exclude body1="chassis" body2="link_R_0"/>
+    <exclude body1="chassis" body2="link_R_1"/>
+    <exclude body1="chassis" body2="link_R_2"/>
+    <exclude body1="chassis" body2="link_R_3"/>
+    <exclude body1="chassis" body2="link_R_4"/>
+  </contact>
+
+  <sensor>
+    <force name="chassis_force" site="chassis_center"/>
+    <torque name="chassis_torque" site="chassis_center"/>
+  </sensor>
+
+</mujoco>

@@ -1,0 +1,66 @@
+<mujoco model="stephenson_III_sixbar">
+  <option timestep="0.002" gravity="0 0 0" integrator="implicit" solver="Newton" iterations="200">
+    <flag contact="disable"/>
+  </option>
+
+  <compiler angle="radian" autolimits="true"/>
+
+  <default>
+    <geom contype="0" conaffinity="0" density="1000"/>
+    <joint type="hinge" axis="0 0 1" damping="1" armature="0.1"/>
+  </default>
+
+  <worldbody>
+    <geom type="sphere" size="0.15" pos="0.5584 1.4180 0" rgba="0.15 0.15 0.15 1" name="O2_mark"/>
+    <geom type="sphere" size="0.15" pos="1.7381 1.4180 0" rgba="0.15 0.15 0.15 1" name="O4_mark"/>
+    <geom type="sphere" size="0.15" pos="-0.0037 5.0 0" rgba="0.15 0.15 0.15 1" name="O6_mark"/>
+
+    <!-- Branch 1: O2 -> crank -> coupler -->
+    <body name="link_a" pos="0.5584 1.4180 0">
+      <joint name="crank_joint"/>
+      <geom type="capsule" fromto="0 0 0 4.0499 0 0" size="0.08" rgba="0.9 0.25 0.25 1"/>
+      <body name="link_b" pos="4.0499 0 0">
+        <joint name="coupler_joint"/>
+        <geom type="capsule" fromto="0 0 0 4.8983 0 0" size="0.08" rgba="0.25 0.8 0.25 1"/>
+        <body name="coupler_tip" pos="4.8983 0 0"/>
+      </body>
+    </body>
+
+    <!-- Branch 2: O4 -> rocker -> link_e -->
+    <body name="link_c" pos="1.7381 1.4180 0">
+      <joint name="rocker_joint"/>
+      <geom type="capsule" fromto="0 0 0 2.0489 0 0" size="0.08" rgba="0.25 0.25 0.9 1"/>
+      <body name="link_e" pos="2.0489 0 0">
+        <joint name="link_e_joint"/>
+        <geom type="capsule" fromto="0 0 0 3.0571 0 0" size="0.08" rgba="0.7 0.4 0.9 1"/>
+        <site name="tracer_P" pos="1.0946 2.4234 0" size="0.18" rgba="1 0 0 1" type="sphere"/>
+        <body name="link_e_tip" pos="3.0571 0 0"/>
+      </body>
+    </body>
+
+    <!-- Branch 3: O6 -> link_f -->
+    <body name="link_f" pos="-0.0037 5.0 0">
+      <joint name="link_f_joint"/>
+      <geom type="capsule" fromto="0 0 0 2.9938 0 0" size="0.08" rgba="0.9 0.7 0.15 1"/>
+      <body name="link_f_tip" pos="2.9938 0 0"/>
+    </body>
+  </worldbody>
+
+  <equality>
+    <connect name="close_fourbar" body1="coupler_tip" body2="link_e" anchor="0 0 0"/>
+    <connect name="close_dyad" body1="link_e_tip" body2="link_f_tip" anchor="0 0 0"/>
+  </equality>
+
+  <actuator>
+    <velocity name="crank_motor" joint="crank_joint" kv="100"/>
+  </actuator>
+
+  <sensor>
+    <framepos name="tracer_pos" objtype="site" objname="tracer_P"/>
+  </sensor>
+
+  <!-- qpos order: crank_joint, coupler_joint, rocker_joint, link_e_joint, link_f_joint -->
+  <keyframe>
+    <key name="home" qpos="1.047198 -3.235332 -2.901675 5.231681 -2.474913"/>
+  </keyframe>
+</mujoco>

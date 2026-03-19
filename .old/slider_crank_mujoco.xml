@@ -1,0 +1,69 @@
+<mujoco model="slider_crank">
+  <option timestep="0.002" gravity="0 0 0" integrator="implicit" solver="Newton" iterations="200">
+    <flag contact="disable"/>
+  </option>
+
+  <compiler angle="radian" autolimits="true"/>
+
+  <default>
+    <geom contype="0" conaffinity="0" density="1000"/>
+    <joint type="hinge" axis="0 0 1" damping="1" armature="0.1"/>
+  </default>
+
+  <worldbody>
+    <!-- Ground pivot marker at O2 -->
+    <geom type="sphere" size="0.15" pos="3.118361 -0.034922 0" rgba="0.15 0.15 0.15 1" name="O2_mark"/>
+
+    <!-- Slider rail visual (long thin box along slider direction ~(-1,0) with offset) -->
+    <!-- slider_angle ~ -pi, direction ~ (-1, 0), offset = -0.073295 perpendicular -->
+    <!-- Perpendicular to (-1,0) is (0,-1), so offset shifts rail by 0.073295 in -y from O2 -->
+    <!-- Rail center at O2 shifted: (3.118361, -0.034922 + (-0.073295)*(-1)) but let's compute properly -->
+    <!-- perp direction = (-sin(slider_angle), cos(slider_angle)) = (-sin(-pi), cos(-pi)) = (0, -1) -->
+    <!-- rail base = O2 + offset * perp = (3.118361, -0.034922) + (-0.073295)*(0,-1) = (3.118361, 0.038373) -->
+    <geom type="box" size="6 0.03 0.02"
+          pos="3.118361 0.038373 -0.1"
+          rgba="0.5 0.5 0.5 0.3" name="slider_rail"/>
+
+    <!-- Branch 1: crank (hinge at O2) -> connecting rod (hinge at A) -->
+    <body name="crank_body" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.08" rgba="0.9 0.25 0.25 1" name="crank_geom"/>
+      <body name="rod_body" pos="2.91648 0 0">
+        <joint name="rod_joint"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.08" rgba="0.25 0.25 0.9 1" name="rod_geom"/>
+        <!-- Coupler tracing point P at offset (px, py) in rod frame -->
+        <site name="tracer_P" pos="3.181522 0.004651 0" size="0.18" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <!-- Branch 2: slider body (slide joint along slider direction) -->
+    <!-- Slider starts at rail base position, slides along direction (cos(sa), sin(sa)) ~ (-1, 0) -->
+    <!-- We place slider body at the rail with a slide joint -->
+    <!-- For slider_angle ~ -pi: cos(-pi) = -1, sin(-pi) ~ 0 -->
+    <!-- Slide axis in world frame: (-1, ~0, 0). We use exact values. -->
+    <!-- cos(-3.137783) = -0.99999271, sin(-3.137783) = -0.00381683 -->
+    <body name="slider_body" pos="3.118361 0.038373 0">
+      <joint name="slider_joint" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.2 0.15 0.08" rgba="0.9 0.6 0.15 1" name="slider_geom"/>
+    </body>
+  </worldbody>
+
+  <equality>
+    <!-- Close the loop: rod tip = slider body position -->
+    <connect name="close_loop" body1="rod_tip" body2="slider_body" anchor="0 0 0"/>
+  </equality>
+
+  <actuator>
+    <velocity name="crank_motor" joint="crank_joint" kv="100"/>
+  </actuator>
+
+  <sensor>
+    <framepos name="tracer_pos" objtype="site" objname="tracer_P"/>
+  </sensor>
+
+  <!-- qpos order: crank_joint, rod_joint, slider_joint -->
+  <keyframe>
+    <key name="home" qpos="0 0 0"/>
+  </keyframe>
+</mujoco>

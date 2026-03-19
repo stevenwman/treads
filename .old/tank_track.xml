@@ -1,0 +1,531 @@
+<mujoco model="tank_track_N20">
+  <option timestep="0.002" gravity="0 0 0" integrator="implicit" solver="Newton" iterations="200">
+    <flag contact="disable"/>
+  </option>
+
+  <compiler angle="radian" autolimits="true"/>
+
+  <default>
+    <geom contype="0" conaffinity="0" density="1000"/>
+    <joint type="hinge" axis="0 0 1" damping="1" armature="0.1"/>
+  </default>
+
+  <worldbody>
+    <geom type="sphere" size="0.15" pos="3.118361 -0.034922 0" rgba="0.15 0.15 0.15 1" name="O2_mark"/>
+
+    <geom type="box" size="6 0.03 0.02"
+          pos="3.1180817721155645 0.03837246811860056 -0.1"
+          rgba="0.5 0.5 0.5 0.3" name="slider_rail"/>
+
+    <!-- Mechanism 0 -->
+    <body name="crank_body_0" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_0"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_0"/>
+      <body name="rod_body_0" pos="2.91648 0 0">
+        <joint name="rod_joint_0"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_0"/>
+        <site name="tracer_P_0" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_0" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_0" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_0" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_0"/>
+    </body>
+
+    <!-- Mechanism 1 -->
+    <body name="crank_body_1" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_1"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_1"/>
+      <body name="rod_body_1" pos="2.91648 0 0">
+        <joint name="rod_joint_1"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_1"/>
+        <site name="tracer_P_1" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_1" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_1" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_1" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_1"/>
+    </body>
+
+    <!-- Mechanism 2 -->
+    <body name="crank_body_2" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_2"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_2"/>
+      <body name="rod_body_2" pos="2.91648 0 0">
+        <joint name="rod_joint_2"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_2"/>
+        <site name="tracer_P_2" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_2" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_2" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_2" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_2"/>
+    </body>
+
+    <!-- Mechanism 3 -->
+    <body name="crank_body_3" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_3"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_3"/>
+      <body name="rod_body_3" pos="2.91648 0 0">
+        <joint name="rod_joint_3"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_3"/>
+        <site name="tracer_P_3" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_3" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_3" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_3" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_3"/>
+    </body>
+
+    <!-- Mechanism 4 -->
+    <body name="crank_body_4" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_4"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_4"/>
+      <body name="rod_body_4" pos="2.91648 0 0">
+        <joint name="rod_joint_4"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_4"/>
+        <site name="tracer_P_4" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_4" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_4" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_4" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_4"/>
+    </body>
+
+    <!-- Mechanism 5 -->
+    <body name="crank_body_5" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_5"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_5"/>
+      <body name="rod_body_5" pos="2.91648 0 0">
+        <joint name="rod_joint_5"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_5"/>
+        <site name="tracer_P_5" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_5" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_5" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_5" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_5"/>
+    </body>
+
+    <!-- Mechanism 6 -->
+    <body name="crank_body_6" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_6"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_6"/>
+      <body name="rod_body_6" pos="2.91648 0 0">
+        <joint name="rod_joint_6"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_6"/>
+        <site name="tracer_P_6" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_6" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_6" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_6" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_6"/>
+    </body>
+
+    <!-- Mechanism 7 -->
+    <body name="crank_body_7" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_7"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_7"/>
+      <body name="rod_body_7" pos="2.91648 0 0">
+        <joint name="rod_joint_7"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_7"/>
+        <site name="tracer_P_7" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_7" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_7" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_7" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_7"/>
+    </body>
+
+    <!-- Mechanism 8 -->
+    <body name="crank_body_8" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_8"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_8"/>
+      <body name="rod_body_8" pos="2.91648 0 0">
+        <joint name="rod_joint_8"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_8"/>
+        <site name="tracer_P_8" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_8" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_8" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_8" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_8"/>
+    </body>
+
+    <!-- Mechanism 9 -->
+    <body name="crank_body_9" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_9"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_9"/>
+      <body name="rod_body_9" pos="2.91648 0 0">
+        <joint name="rod_joint_9"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_9"/>
+        <site name="tracer_P_9" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_9" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_9" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_9" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_9"/>
+    </body>
+
+    <!-- Mechanism 10 -->
+    <body name="crank_body_10" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_10"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_10"/>
+      <body name="rod_body_10" pos="2.91648 0 0">
+        <joint name="rod_joint_10"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_10"/>
+        <site name="tracer_P_10" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_10" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_10" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_10" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_10"/>
+    </body>
+
+    <!-- Mechanism 11 -->
+    <body name="crank_body_11" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_11"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_11"/>
+      <body name="rod_body_11" pos="2.91648 0 0">
+        <joint name="rod_joint_11"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_11"/>
+        <site name="tracer_P_11" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_11" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_11" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_11" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_11"/>
+    </body>
+
+    <!-- Mechanism 12 -->
+    <body name="crank_body_12" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_12"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_12"/>
+      <body name="rod_body_12" pos="2.91648 0 0">
+        <joint name="rod_joint_12"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_12"/>
+        <site name="tracer_P_12" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_12" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_12" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_12" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_12"/>
+    </body>
+
+    <!-- Mechanism 13 -->
+    <body name="crank_body_13" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_13"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_13"/>
+      <body name="rod_body_13" pos="2.91648 0 0">
+        <joint name="rod_joint_13"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_13"/>
+        <site name="tracer_P_13" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_13" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_13" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_13" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_13"/>
+    </body>
+
+    <!-- Mechanism 14 -->
+    <body name="crank_body_14" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_14"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_14"/>
+      <body name="rod_body_14" pos="2.91648 0 0">
+        <joint name="rod_joint_14"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_14"/>
+        <site name="tracer_P_14" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_14" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_14" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_14" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_14"/>
+    </body>
+
+    <!-- Mechanism 15 -->
+    <body name="crank_body_15" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_15"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_15"/>
+      <body name="rod_body_15" pos="2.91648 0 0">
+        <joint name="rod_joint_15"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_15"/>
+        <site name="tracer_P_15" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_15" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_15" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_15" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_15"/>
+    </body>
+
+    <!-- Mechanism 16 -->
+    <body name="crank_body_16" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_16"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_16"/>
+      <body name="rod_body_16" pos="2.91648 0 0">
+        <joint name="rod_joint_16"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_16"/>
+        <site name="tracer_P_16" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_16" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_16" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_16" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_16"/>
+    </body>
+
+    <!-- Mechanism 17 -->
+    <body name="crank_body_17" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_17"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_17"/>
+      <body name="rod_body_17" pos="2.91648 0 0">
+        <joint name="rod_joint_17"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_17"/>
+        <site name="tracer_P_17" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_17" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_17" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_17" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_17"/>
+    </body>
+
+    <!-- Mechanism 18 -->
+    <body name="crank_body_18" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_18"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_18"/>
+      <body name="rod_body_18" pos="2.91648 0 0">
+        <joint name="rod_joint_18"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_18"/>
+        <site name="tracer_P_18" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_18" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_18" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_18" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_18"/>
+    </body>
+
+    <!-- Mechanism 19 -->
+    <body name="crank_body_19" pos="3.118361 -0.034922 0">
+      <joint name="crank_joint_19"/>
+      <geom type="capsule" fromto="0 0 0 2.91648 0 0" size="0.05" rgba="0.9 0.25 0.25 0.3" name="crank_geom_19"/>
+      <body name="rod_body_19" pos="2.91648 0 0">
+        <joint name="rod_joint_19"/>
+        <geom type="capsule" fromto="0 0 0 4.615711 0 0" size="0.05" rgba="0.25 0.25 0.9 0.3" name="rod_geom_19"/>
+        <site name="tracer_P_19" pos="3.181522 0.004651 0" size="0.12" rgba="1 0 0 1" type="sphere"/>
+        <body name="rod_tip_19" pos="4.615711 0 0"/>
+      </body>
+    </body>
+
+    <body name="slider_body_19" pos="3.1180817721155645 0.03837246811860056 0">
+      <joint name="slider_joint_19" type="slide" axis="-0.99999271 -0.00381683 0" damping="1" armature="0.1"/>
+      <geom type="box" size="0.12 0.08 0.05" rgba="0.9 0.6 0.15 0.3" name="slider_geom_19"/>
+    </body>
+
+    <!-- Tread plate 0 -->
+    <body name="tread_0" pos="0 0 0">
+      <freejoint name="tread_joint_0"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_0"/>
+    </body>
+
+    <!-- Tread plate 1 -->
+    <body name="tread_1" pos="0 0 0">
+      <freejoint name="tread_joint_1"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_1"/>
+    </body>
+
+    <!-- Tread plate 2 -->
+    <body name="tread_2" pos="0 0 0">
+      <freejoint name="tread_joint_2"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_2"/>
+    </body>
+
+    <!-- Tread plate 3 -->
+    <body name="tread_3" pos="0 0 0">
+      <freejoint name="tread_joint_3"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_3"/>
+    </body>
+
+    <!-- Tread plate 4 -->
+    <body name="tread_4" pos="0 0 0">
+      <freejoint name="tread_joint_4"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_4"/>
+    </body>
+
+    <!-- Tread plate 5 -->
+    <body name="tread_5" pos="0 0 0">
+      <freejoint name="tread_joint_5"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_5"/>
+    </body>
+
+    <!-- Tread plate 6 -->
+    <body name="tread_6" pos="0 0 0">
+      <freejoint name="tread_joint_6"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_6"/>
+    </body>
+
+    <!-- Tread plate 7 -->
+    <body name="tread_7" pos="0 0 0">
+      <freejoint name="tread_joint_7"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_7"/>
+    </body>
+
+    <!-- Tread plate 8 -->
+    <body name="tread_8" pos="0 0 0">
+      <freejoint name="tread_joint_8"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_8"/>
+    </body>
+
+    <!-- Tread plate 9 -->
+    <body name="tread_9" pos="0 0 0">
+      <freejoint name="tread_joint_9"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_9"/>
+    </body>
+
+    <!-- Tread plate 10 -->
+    <body name="tread_10" pos="0 0 0">
+      <freejoint name="tread_joint_10"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_10"/>
+    </body>
+
+    <!-- Tread plate 11 -->
+    <body name="tread_11" pos="0 0 0">
+      <freejoint name="tread_joint_11"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_11"/>
+    </body>
+
+    <!-- Tread plate 12 -->
+    <body name="tread_12" pos="0 0 0">
+      <freejoint name="tread_joint_12"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_12"/>
+    </body>
+
+    <!-- Tread plate 13 -->
+    <body name="tread_13" pos="0 0 0">
+      <freejoint name="tread_joint_13"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_13"/>
+    </body>
+
+    <!-- Tread plate 14 -->
+    <body name="tread_14" pos="0 0 0">
+      <freejoint name="tread_joint_14"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_14"/>
+    </body>
+
+    <!-- Tread plate 15 -->
+    <body name="tread_15" pos="0 0 0">
+      <freejoint name="tread_joint_15"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_15"/>
+    </body>
+
+    <!-- Tread plate 16 -->
+    <body name="tread_16" pos="0 0 0">
+      <freejoint name="tread_joint_16"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_16"/>
+    </body>
+
+    <!-- Tread plate 17 -->
+    <body name="tread_17" pos="0 0 0">
+      <freejoint name="tread_joint_17"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_17"/>
+    </body>
+
+    <!-- Tread plate 18 -->
+    <body name="tread_18" pos="0 0 0">
+      <freejoint name="tread_joint_18"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_18"/>
+    </body>
+
+    <!-- Tread plate 19 -->
+    <body name="tread_19" pos="0 0 0">
+      <freejoint name="tread_joint_19"/>
+      <geom type="box" size="0.5 0.15 0.04" rgba="0.25 0.25 0.25 1" name="tread_geom_19"/>
+    </body>
+
+  </worldbody>
+
+  <equality>
+    <connect name="close_loop_0" body1="rod_tip_0" body2="slider_body_0" anchor="0 0 0"/>
+    <connect name="close_loop_1" body1="rod_tip_1" body2="slider_body_1" anchor="0 0 0"/>
+    <connect name="close_loop_2" body1="rod_tip_2" body2="slider_body_2" anchor="0 0 0"/>
+    <connect name="close_loop_3" body1="rod_tip_3" body2="slider_body_3" anchor="0 0 0"/>
+    <connect name="close_loop_4" body1="rod_tip_4" body2="slider_body_4" anchor="0 0 0"/>
+    <connect name="close_loop_5" body1="rod_tip_5" body2="slider_body_5" anchor="0 0 0"/>
+    <connect name="close_loop_6" body1="rod_tip_6" body2="slider_body_6" anchor="0 0 0"/>
+    <connect name="close_loop_7" body1="rod_tip_7" body2="slider_body_7" anchor="0 0 0"/>
+    <connect name="close_loop_8" body1="rod_tip_8" body2="slider_body_8" anchor="0 0 0"/>
+    <connect name="close_loop_9" body1="rod_tip_9" body2="slider_body_9" anchor="0 0 0"/>
+    <connect name="close_loop_10" body1="rod_tip_10" body2="slider_body_10" anchor="0 0 0"/>
+    <connect name="close_loop_11" body1="rod_tip_11" body2="slider_body_11" anchor="0 0 0"/>
+    <connect name="close_loop_12" body1="rod_tip_12" body2="slider_body_12" anchor="0 0 0"/>
+    <connect name="close_loop_13" body1="rod_tip_13" body2="slider_body_13" anchor="0 0 0"/>
+    <connect name="close_loop_14" body1="rod_tip_14" body2="slider_body_14" anchor="0 0 0"/>
+    <connect name="close_loop_15" body1="rod_tip_15" body2="slider_body_15" anchor="0 0 0"/>
+    <connect name="close_loop_16" body1="rod_tip_16" body2="slider_body_16" anchor="0 0 0"/>
+    <connect name="close_loop_17" body1="rod_tip_17" body2="slider_body_17" anchor="0 0 0"/>
+    <connect name="close_loop_18" body1="rod_tip_18" body2="slider_body_18" anchor="0 0 0"/>
+    <connect name="close_loop_19" body1="rod_tip_19" body2="slider_body_19" anchor="0 0 0"/>
+  </equality>
+
+  <sensor>
+    <framepos name="tracer_pos_0" objtype="site" objname="tracer_P_0"/>
+    <framepos name="tracer_pos_1" objtype="site" objname="tracer_P_1"/>
+    <framepos name="tracer_pos_2" objtype="site" objname="tracer_P_2"/>
+    <framepos name="tracer_pos_3" objtype="site" objname="tracer_P_3"/>
+    <framepos name="tracer_pos_4" objtype="site" objname="tracer_P_4"/>
+    <framepos name="tracer_pos_5" objtype="site" objname="tracer_P_5"/>
+    <framepos name="tracer_pos_6" objtype="site" objname="tracer_P_6"/>
+    <framepos name="tracer_pos_7" objtype="site" objname="tracer_P_7"/>
+    <framepos name="tracer_pos_8" objtype="site" objname="tracer_P_8"/>
+    <framepos name="tracer_pos_9" objtype="site" objname="tracer_P_9"/>
+    <framepos name="tracer_pos_10" objtype="site" objname="tracer_P_10"/>
+    <framepos name="tracer_pos_11" objtype="site" objname="tracer_P_11"/>
+    <framepos name="tracer_pos_12" objtype="site" objname="tracer_P_12"/>
+    <framepos name="tracer_pos_13" objtype="site" objname="tracer_P_13"/>
+    <framepos name="tracer_pos_14" objtype="site" objname="tracer_P_14"/>
+    <framepos name="tracer_pos_15" objtype="site" objname="tracer_P_15"/>
+    <framepos name="tracer_pos_16" objtype="site" objname="tracer_P_16"/>
+    <framepos name="tracer_pos_17" objtype="site" objname="tracer_P_17"/>
+    <framepos name="tracer_pos_18" objtype="site" objname="tracer_P_18"/>
+    <framepos name="tracer_pos_19" objtype="site" objname="tracer_P_19"/>
+  </sensor>
+
+  <keyframe>
+    <key name="home" qpos="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>

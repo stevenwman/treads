@@ -1,0 +1,11 @@
+2026-03-17 09:48:17,141 - pyswarms.single.local_best - INFO - Optimize for 100 iters with {'c1': 3.0, 'c2': 0.1, 'w': 0.6, 'k': 17, 'p': 1}
+2026-03-17 09:48:27,437 - pyswarms.single.local_best - INFO - Optimization finished | best cost: 0.4162024043735327, best pos: [1.77232363 3.72955158 4.73353563 0.49755547 3.93894122]
+2026-03-17 09:58:01,975 - pyswarms.single.local_best - INFO - Optimize for 80 iters with {'c1': 3.0, 'c2': 0.1, 'w': 0.6, 'k': 17, 'p': 1}
+2026-03-17 09:58:05,612 - pyswarms.single.local_best - INFO - Optimization finished | best cost: 0.5502712963632905, best pos: [ 2.20875136  4.51389611  3.27418249  1.00138934 -0.80517609]
+2026-03-17 09:58:30,902 - pyswarms.single.local_best - INFO - Optimize for 80 iters with {'c1': 3.0, 'c2': 0.1, 'w': 0.6, 'k': 17, 'p': 1}
+2026-03-17 09:58:36,098 - pyswarms.single.local_best - INFO - Optimization finished | best cost: 0.43003127795408036, best pos: [ 1.76975792  3.59688227  4.261233    0.49744    -1.54281209]
+2026-03-17 10:03:34,430 - pyswarms.single.local_best - INFO - Optimize for 80 iters with {'c1': 3.0, 'c2': 0.1, 'w': 0.6, 'k': 17, 'p': 1}
+2026-03-17 10:03:39,618 - pyswarms.single.local_best - INFO - Optimization finished | best cost: 0.440301956531696, best pos: [ 1.73650917  5.30594287  3.04754568  0.38199391 -0.16931934]
+2026-03-17 10:07:21,270 - pyswarms.single.local_best - INFO - Optimize for 80 iters with {'c1': 3.0, 'c2': 0.1, 'w': 0.6, 'k': 17, 'p': 1}
+2026-03-17 10:07:27,057 - pyswarms.single.local_best - INFO - Optimization finished | best cost: 0.44017666982573705, best pos: [ 1.85873785  3.32812832  3.81846115  0.60016153 -1.22610543]
+2026-03-17 10:15:21,316 - matplotlib.animation - INFO - Animation.save using <class 'matplotlib.animation.PillowWriter'>

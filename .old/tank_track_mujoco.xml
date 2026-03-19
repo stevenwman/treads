@@ -1,0 +1,491 @@
+<mujoco model="tank_track">
+  <option gravity="0 0 0" integrator="Euler" timestep="0.002"/>
+
+  <visual>
+    <headlight diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3"/>
+    <global offwidth="1280" offheight="720"/>
+  </visual>
+
+  <asset>
+    <texture name="grid" type="2d" builtin="checker" rgb1="0.85 0.85 0.85"
+             rgb2="0.7 0.7 0.7" width="512" height="512"/>
+    <material name="grid_mat" texture="grid" texrepeat="10 10" reflectance="0.1"/>
+  </asset>
+
+  <worldbody>
+    <!-- Ground plane -->
+    <geom type="plane" size="15 15 0.1" material="grid_mat" pos="0 0 -2"
+          contype="0" conaffinity="0"/>
+
+    <!-- Crank pivot marker at O2 -->
+    <site name="pivot_O2" pos="3.118361 0 -0.034922" size="0.1"
+          rgba="0.1 0.7 0.2 1" type="sphere"/>
+
+    <!-- Slider rail visualization -->
+    <geom type="capsule" size="0.01"
+          fromto="-4.881639 0 -0.10821700000000001 11.118361 0 -0.10821700000000001"
+          rgba="0.5 0.5 0.5 0.2" contype="0" conaffinity="0"
+          group="2"/>
+
+    <body name="crank_00" pos="0 0 0">
+  <freejoint name="crank_jnt_00"/>
+  <geom name="crank_geom_00" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_00" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_00" pos="0 0 0">
+  <freejoint name="rod_jnt_00"/>
+  <geom name="rod_geom_00" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_00" pos="0 0 0">
+  <freejoint name="tracer_jnt_00"/>
+  <geom name="tracer_geom_00" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_01" pos="0 0 0">
+  <freejoint name="crank_jnt_01"/>
+  <geom name="crank_geom_01" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_01" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_01" pos="0 0 0">
+  <freejoint name="rod_jnt_01"/>
+  <geom name="rod_geom_01" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_01" pos="0 0 0">
+  <freejoint name="tracer_jnt_01"/>
+  <geom name="tracer_geom_01" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_02" pos="0 0 0">
+  <freejoint name="crank_jnt_02"/>
+  <geom name="crank_geom_02" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_02" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_02" pos="0 0 0">
+  <freejoint name="rod_jnt_02"/>
+  <geom name="rod_geom_02" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_02" pos="0 0 0">
+  <freejoint name="tracer_jnt_02"/>
+  <geom name="tracer_geom_02" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_03" pos="0 0 0">
+  <freejoint name="crank_jnt_03"/>
+  <geom name="crank_geom_03" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_03" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_03" pos="0 0 0">
+  <freejoint name="rod_jnt_03"/>
+  <geom name="rod_geom_03" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_03" pos="0 0 0">
+  <freejoint name="tracer_jnt_03"/>
+  <geom name="tracer_geom_03" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_04" pos="0 0 0">
+  <freejoint name="crank_jnt_04"/>
+  <geom name="crank_geom_04" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_04" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_04" pos="0 0 0">
+  <freejoint name="rod_jnt_04"/>
+  <geom name="rod_geom_04" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_04" pos="0 0 0">
+  <freejoint name="tracer_jnt_04"/>
+  <geom name="tracer_geom_04" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_05" pos="0 0 0">
+  <freejoint name="crank_jnt_05"/>
+  <geom name="crank_geom_05" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_05" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_05" pos="0 0 0">
+  <freejoint name="rod_jnt_05"/>
+  <geom name="rod_geom_05" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_05" pos="0 0 0">
+  <freejoint name="tracer_jnt_05"/>
+  <geom name="tracer_geom_05" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_06" pos="0 0 0">
+  <freejoint name="crank_jnt_06"/>
+  <geom name="crank_geom_06" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_06" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_06" pos="0 0 0">
+  <freejoint name="rod_jnt_06"/>
+  <geom name="rod_geom_06" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_06" pos="0 0 0">
+  <freejoint name="tracer_jnt_06"/>
+  <geom name="tracer_geom_06" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_07" pos="0 0 0">
+  <freejoint name="crank_jnt_07"/>
+  <geom name="crank_geom_07" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_07" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_07" pos="0 0 0">
+  <freejoint name="rod_jnt_07"/>
+  <geom name="rod_geom_07" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_07" pos="0 0 0">
+  <freejoint name="tracer_jnt_07"/>
+  <geom name="tracer_geom_07" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_08" pos="0 0 0">
+  <freejoint name="crank_jnt_08"/>
+  <geom name="crank_geom_08" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_08" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_08" pos="0 0 0">
+  <freejoint name="rod_jnt_08"/>
+  <geom name="rod_geom_08" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_08" pos="0 0 0">
+  <freejoint name="tracer_jnt_08"/>
+  <geom name="tracer_geom_08" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_09" pos="0 0 0">
+  <freejoint name="crank_jnt_09"/>
+  <geom name="crank_geom_09" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_09" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_09" pos="0 0 0">
+  <freejoint name="rod_jnt_09"/>
+  <geom name="rod_geom_09" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_09" pos="0 0 0">
+  <freejoint name="tracer_jnt_09"/>
+  <geom name="tracer_geom_09" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_10" pos="0 0 0">
+  <freejoint name="crank_jnt_10"/>
+  <geom name="crank_geom_10" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_10" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_10" pos="0 0 0">
+  <freejoint name="rod_jnt_10"/>
+  <geom name="rod_geom_10" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_10" pos="0 0 0">
+  <freejoint name="tracer_jnt_10"/>
+  <geom name="tracer_geom_10" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_11" pos="0 0 0">
+  <freejoint name="crank_jnt_11"/>
+  <geom name="crank_geom_11" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_11" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_11" pos="0 0 0">
+  <freejoint name="rod_jnt_11"/>
+  <geom name="rod_geom_11" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_11" pos="0 0 0">
+  <freejoint name="tracer_jnt_11"/>
+  <geom name="tracer_geom_11" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_12" pos="0 0 0">
+  <freejoint name="crank_jnt_12"/>
+  <geom name="crank_geom_12" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_12" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_12" pos="0 0 0">
+  <freejoint name="rod_jnt_12"/>
+  <geom name="rod_geom_12" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_12" pos="0 0 0">
+  <freejoint name="tracer_jnt_12"/>
+  <geom name="tracer_geom_12" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_13" pos="0 0 0">
+  <freejoint name="crank_jnt_13"/>
+  <geom name="crank_geom_13" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_13" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_13" pos="0 0 0">
+  <freejoint name="rod_jnt_13"/>
+  <geom name="rod_geom_13" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_13" pos="0 0 0">
+  <freejoint name="tracer_jnt_13"/>
+  <geom name="tracer_geom_13" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_14" pos="0 0 0">
+  <freejoint name="crank_jnt_14"/>
+  <geom name="crank_geom_14" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_14" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_14" pos="0 0 0">
+  <freejoint name="rod_jnt_14"/>
+  <geom name="rod_geom_14" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_14" pos="0 0 0">
+  <freejoint name="tracer_jnt_14"/>
+  <geom name="tracer_geom_14" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_15" pos="0 0 0">
+  <freejoint name="crank_jnt_15"/>
+  <geom name="crank_geom_15" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_15" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_15" pos="0 0 0">
+  <freejoint name="rod_jnt_15"/>
+  <geom name="rod_geom_15" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_15" pos="0 0 0">
+  <freejoint name="tracer_jnt_15"/>
+  <geom name="tracer_geom_15" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_16" pos="0 0 0">
+  <freejoint name="crank_jnt_16"/>
+  <geom name="crank_geom_16" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_16" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_16" pos="0 0 0">
+  <freejoint name="rod_jnt_16"/>
+  <geom name="rod_geom_16" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_16" pos="0 0 0">
+  <freejoint name="tracer_jnt_16"/>
+  <geom name="tracer_geom_16" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_17" pos="0 0 0">
+  <freejoint name="crank_jnt_17"/>
+  <geom name="crank_geom_17" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_17" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_17" pos="0 0 0">
+  <freejoint name="rod_jnt_17"/>
+  <geom name="rod_geom_17" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_17" pos="0 0 0">
+  <freejoint name="tracer_jnt_17"/>
+  <geom name="tracer_geom_17" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_18" pos="0 0 0">
+  <freejoint name="crank_jnt_18"/>
+  <geom name="crank_geom_18" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_18" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_18" pos="0 0 0">
+  <freejoint name="rod_jnt_18"/>
+  <geom name="rod_geom_18" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_18" pos="0 0 0">
+  <freejoint name="tracer_jnt_18"/>
+  <geom name="tracer_geom_18" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="crank_19" pos="0 0 0">
+  <freejoint name="crank_jnt_19"/>
+  <geom name="crank_geom_19" type="capsule" size="0.03" fromto="0 0 0 1 0 0"
+        rgba="0.85 0.2 0.2 0.8" contype="0" conaffinity="0"
+        group="2"/>
+  <site name="crank_site_19" size="0.04" rgba="0.85 0.2 0.2 1"/>
+</body>
+<body name="rod_19" pos="0 0 0">
+  <freejoint name="rod_jnt_19"/>
+  <geom name="rod_geom_19" type="capsule" size="0.025" fromto="0 0 0 1 0 0"
+        rgba="0.2 0.4 0.85 0.8" contype="0" conaffinity="0"
+        group="2"/>
+</body>
+<body name="tracer_19" pos="0 0 0">
+  <freejoint name="tracer_jnt_19"/>
+  <geom name="tracer_geom_19" type="sphere" size="0.06"
+        rgba="0.15 0.15 0.15 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_00" pos="0 0 0">
+  <freejoint name="tread_jnt_00"/>
+  <geom name="tread_geom_00" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_01" pos="0 0 0">
+  <freejoint name="tread_jnt_01"/>
+  <geom name="tread_geom_01" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_02" pos="0 0 0">
+  <freejoint name="tread_jnt_02"/>
+  <geom name="tread_geom_02" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_03" pos="0 0 0">
+  <freejoint name="tread_jnt_03"/>
+  <geom name="tread_geom_03" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_04" pos="0 0 0">
+  <freejoint name="tread_jnt_04"/>
+  <geom name="tread_geom_04" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_05" pos="0 0 0">
+  <freejoint name="tread_jnt_05"/>
+  <geom name="tread_geom_05" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_06" pos="0 0 0">
+  <freejoint name="tread_jnt_06"/>
+  <geom name="tread_geom_06" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_07" pos="0 0 0">
+  <freejoint name="tread_jnt_07"/>
+  <geom name="tread_geom_07" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_08" pos="0 0 0">
+  <freejoint name="tread_jnt_08"/>
+  <geom name="tread_geom_08" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_09" pos="0 0 0">
+  <freejoint name="tread_jnt_09"/>
+  <geom name="tread_geom_09" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_10" pos="0 0 0">
+  <freejoint name="tread_jnt_10"/>
+  <geom name="tread_geom_10" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_11" pos="0 0 0">
+  <freejoint name="tread_jnt_11"/>
+  <geom name="tread_geom_11" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_12" pos="0 0 0">
+  <freejoint name="tread_jnt_12"/>
+  <geom name="tread_geom_12" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_13" pos="0 0 0">
+  <freejoint name="tread_jnt_13"/>
+  <geom name="tread_geom_13" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_14" pos="0 0 0">
+  <freejoint name="tread_jnt_14"/>
+  <geom name="tread_geom_14" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_15" pos="0 0 0">
+  <freejoint name="tread_jnt_15"/>
+  <geom name="tread_geom_15" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_16" pos="0 0 0">
+  <freejoint name="tread_jnt_16"/>
+  <geom name="tread_geom_16" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_17" pos="0 0 0">
+  <freejoint name="tread_jnt_17"/>
+  <geom name="tread_geom_17" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_18" pos="0 0 0">
+  <freejoint name="tread_jnt_18"/>
+  <geom name="tread_geom_18" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+<body name="tread_19" pos="0 0 0">
+  <freejoint name="tread_jnt_19"/>
+  <geom name="tread_geom_19" type="box" size="0.3 0.04 0.15"
+        rgba="0.35 0.3 0.25 1" contype="0" conaffinity="0"/>
+</body>
+  </worldbody>
+</mujoco>
