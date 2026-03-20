@@ -282,41 +282,61 @@ def set_initial_shape(model, data, hinge_jids):
 _engaged = {}
 
 
+MAX_ENG_PER_SPROCKET = 2
+
+
+def _count_engaged(side, spr_name):
+    """Count how many links are currently engaged to this sprocket."""
+    return sum(1 for (s, i, sp) in _engaged if s == side and sp == spr_name)
+
+
 def seed_initial_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids):
-    top_len = 2 * HALF_SPAN
-    arc_len = math.pi * SPROCKET_R
-
+    """Seed engagement using the same position check as runtime, capped at 2 per sprocket."""
     for side, _ in SIDES:
-        for i in range(N_LINKS):
-            s = (i * LINK_PITCH) % PERIMETER
-            spr_name = None
-            if top_len < s < top_len + arc_len:
-                spr_name = "drive"
-            elif 2 * top_len + arc_len < s:
-                spr_name = "idler"
-            if spr_name is None:
+        for spr_name, _ in SPR_DEFS:
+            if spr_name == "mid":
                 continue
 
-            key = (side, i, spr_name)
-            eq_idx = eng_ids.get(key)
-            if eq_idx is None:
-                continue
-
-            bid = link_bids[side][i]
             sbid = spr_bids[(side, spr_name)]
-            dx = data.xpos[bid][0] - data.xpos[sbid][0]
-            dz = data.xpos[bid][2] - data.xpos[sbid][2]
-            dist = math.sqrt(dx * dx + dz * dz)
-            world_angle = math.atan2(dz, dx)
-            spr_angle = data.qpos[model.jnt_qposadr[jnt_ids[(side, spr_name)]]]
-            local_angle = _norm_angle(world_angle + spr_angle)
+            sx, sz = data.xpos[sbid][0], data.xpos[sbid][2]
 
-            model.eq_data[eq_idx, 0] = dist * math.cos(local_angle)
-            model.eq_data[eq_idx, 1] = 0.0
-            model.eq_data[eq_idx, 2] = dist * math.sin(local_angle)
-            model.eq_data[eq_idx, 3:6] = 0.0
-            data.eq_active[eq_idx] = 1
-            _engaged[key] = local_angle
+            # Collect candidates with their distance from the horizontal center line
+            candidates = []
+            for i in range(N_LINKS):
+                bid = link_bids[side][i]
+                lx, lz = data.xpos[bid][0], data.xpos[bid][2]
+                dx, dz = lx - sx, lz - sz
+                dist = math.sqrt(dx * dx + dz * dz)
+
+                on_arc = False
+                if spr_name == "drive":
+                    on_arc = lx < sx - SPROCKET_R * 0.85
+                elif spr_name == "idler":
+                    on_arc = lx > sx + SPROCKET_R * 0.85
+                on_arc = on_arc and abs(dist - SPROCKET_R) < 0.10
+
+                if on_arc:
+                    # Sort by closeness to horizontal (small |dz| = closer to center line)
+                    candidates.append((abs(dz), i, dx, dz, dist))
+
+            # Take the 2 closest to horizontal
+            candidates.sort()
+            for _, i, dx, dz, dist in candidates[:MAX_ENG_PER_SPROCKET]:
+                key = (side, i, spr_name)
+                eq_idx = eng_ids.get(key)
+                if eq_idx is None:
+                    continue
+
+                world_angle = math.atan2(dz, dx)
+                spr_angle = data.qpos[model.jnt_qposadr[jnt_ids[(side, spr_name)]]]
+                local_angle = _norm_angle(world_angle + spr_angle)
+
+                model.eq_data[eq_idx, 0] = dist * math.cos(local_angle)
+                model.eq_data[eq_idx, 1] = 0.0
+                model.eq_data[eq_idx, 2] = dist * math.sin(local_angle)
+                model.eq_data[eq_idx, 3:6] = 0.0
+                data.eq_active[eq_idx] = 1
+                _engaged[key] = local_angle
 
     mujoco.mj_forward(model, data)
 
@@ -341,14 +361,14 @@ def update_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids):
                 dx, dz = lx - sx, lz - sz
                 dist = math.sqrt(dx * dx + dz * dz)
 
-                # Only engage links near the apex of the arc (deepest wrap point)
-                # Drive apex: directly left of sprocket (angle ≈ π)
-                # Idler apex: directly right of sprocket (angle ≈ 0)
+                # Only engage the 2 links closest to the horizontal center line
+                # Drive: directly left of sprocket (lx < sx - R*0.85)
+                # Idler: directly right (lx > sx + R*0.85)
                 on_arc = False
                 if spr_name == "drive":
-                    on_arc = lx < sx - SPROCKET_R * 0.5  # must be well past center
+                    on_arc = lx < sx - SPROCKET_R * 0.85
                 elif spr_name == "idler":
-                    on_arc = lx > sx + SPROCKET_R * 0.5
+                    on_arc = lx > sx + SPROCKET_R * 0.85
                 on_arc = on_arc and abs(dist - SPROCKET_R) < 0.10
 
                 if key in _engaged:
@@ -363,8 +383,8 @@ def update_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids):
                     if off > ARC_HALF:
                         del _engaged[key]
                         data.eq_active[eq_idx] = 0
-                elif on_arc:
-                    # New engagement — set anchor ONCE (fixed)
+                elif on_arc and _count_engaged(side, spr_name) < MAX_ENG_PER_SPROCKET:
+                    # New engagement — set anchor ONCE (fixed), only if under cap
                     world_angle = math.atan2(dz, dx)
                     local_angle = _norm_angle(world_angle + spr_angle)
                     model.eq_data[eq_idx, 0] = SPROCKET_R * math.cos(local_angle)
