@@ -17,9 +17,11 @@ import mujoco
 
 # ── Track parameters (same as chain_track.py) ──────────────────────────────
 
-N_LINKS = 28
-SPROCKET_R = 0.35
-HALF_SPAN = 1.3394  # tuned for zero-slack: 4 links per arc, 10 per straight, chord=0.2679
+SPROCKET_R = 0.25     # smaller wheels for 4-sprocket layout
+N_SPROCKETS = 4
+SPAN_BETWEEN = 0.7    # distance between adjacent sprocket centers
+HALF_SPAN = SPAN_BETWEEN * (N_SPROCKETS - 1) / 2  # 1.05
+N_LINKS = 30          # tuned: 4 links per arc, 11 per straight, chord=0.1913
 LINK_THICK = 0.02
 LINK_WIDTH = 0.10
 TIMESTEP = 0.002
@@ -36,17 +38,19 @@ LINK_PITCH = PERIMETER / N_LINKS
 # ── Tank geometry ───────────────────────────────────────────────────────────
 
 TRACK_GAUGE = 1.2         # Y distance between left/right track centers
-HULL_HALF_X = HALF_SPAN + 0.25
+HULL_HALF_X = HALF_SPAN + 0.2
 HULL_HALF_Y = TRACK_GAUGE / 2 - 0.05
 HULL_HALF_Z = 0.12
 SPROCKET_Z = SPROCKET_R + 0.02  # sprocket center height — low so bottom treads press into ground
 HULL_Z = SPROCKET_Z + 0.15      # hull center height (above sprockets)
 
 # Per-track sprocket defs: (local_name, x_offset)
+# 4 sprockets evenly spaced. Drive at rear, idler at front, two mids in between.
 SPR_DEFS = [
-    ("drive", -HALF_SPAN),
-    ("idler",  HALF_SPAN),
-    ("mid",    0.0),
+    ("drive",  -HALF_SPAN),
+    ("mid1",   -HALF_SPAN + SPAN_BETWEEN),
+    ("mid2",   -HALF_SPAN + 2 * SPAN_BETWEEN),
+    ("idler",   HALF_SPAN),
 ]
 
 SIDES = [("left", 1), ("right", -1)]
@@ -154,7 +158,8 @@ def build_xml():
                 a(f'        <joint name="{full}_slide" type="slide" axis="1 0 0"'
                   f' stiffness="{TENSION_K}" damping="80" range="-0.05 0.3"/>')
             a(f'        <joint name="{full}_hinge" type="hinge" axis="0 1 0" damping="2.0"/>')
-            col = {"drive": "0.7 0.2 0.2 1", "idler": "0.2 0.2 0.7 1", "mid": "0.2 0.6 0.2 1"}[spr_name]
+            col_map = {"drive": "0.7 0.2 0.2 1", "idler": "0.2 0.2 0.7 1"}
+            col = col_map.get(spr_name, "0.2 0.6 0.2 1")
             # Hub: collision enabled so chain links ride on it during transitions
             a(f'        <geom type="cylinder" size="{HUB_R} {HUB_HALF_Y}" euler="90 0 0"'
               f' rgba="{col}" contype="1" conaffinity="2"/>')
@@ -185,7 +190,7 @@ def build_xml():
             a(f'      <body name="{side}_link_{i}" pos="{LINK_PITCH:.6f} 0 0">')
             a(f'        <joint name="{side}_hinge_{i}" type="hinge" axis="0 1 0"'
               f' pos="{-LINK_PITCH/2:.6f} 0 0" damping="0.2"'
-              f' limited="true" range="-70 70"/>')
+              f' limited="true" range="-80 80"/>')
             a(f'        <geom type="box" size="{half_len:.4f} {LINK_WIDTH} {LINK_THICK}"'
               f' rgba="0.9 0.6 0.1 1" mass="0.05" contype="2" conaffinity="1"/>')
 
@@ -213,7 +218,7 @@ def build_xml():
         # Sprocket engagement
         for i in range(N_LINKS):
             for spr_name, _ in SPR_DEFS:
-                if spr_name == "mid":
+                if spr_name.startswith("mid"):
                     continue
                 full = f"{side}_{spr_name}"
                 a(f'    <connect name="{side}_eng_{i}_{spr_name}"'
@@ -294,7 +299,7 @@ def seed_initial_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids):
     """Seed engagement using the same position check as runtime, capped at 2 per sprocket."""
     for side, _ in SIDES:
         for spr_name, _ in SPR_DEFS:
-            if spr_name == "mid":
+            if spr_name.startswith("mid"):
                 continue
 
             sbid = spr_bids[(side, spr_name)]
@@ -348,7 +353,7 @@ def update_engagement(model, data, link_bids, spr_bids, eng_ids, jnt_ids):
             lz = data.xpos[link_bids[side][i]][2]
 
             for spr_name, _ in SPR_DEFS:
-                if spr_name == "mid":
+                if spr_name.startswith("mid"):
                     continue
                 key = (side, i, spr_name)
                 eq_idx = eng_ids.get(key)
