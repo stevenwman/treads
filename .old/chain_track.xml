@@ -1,402 +1,393 @@
-<mujoco model="dual_chain_track">
-  <option timestep="0.001" gravity="0 -3.0 0" integrator="implicit"
-          noslip_iterations="200" viscosity="0.005">
-    <flag warmstart="enable"/>
-  </option>
-  <compiler angle="radian"/>
-  <size nconmax="6000" njmax="12000"/>
-
+<mujoco model="chain_track">
+  <option timestep="0.002" gravity="0 -9.81 0" iterations="200" solver="Newton" tolerance="1e-10" noslip_iterations="10"/>
+  <size nconmax="500" njmax="3000"/>
   <default>
-    <geom condim="4" friction="1.5 0.005 0.001" margin="0.0005"
-          solimp="0.97 0.999 0.0001 0.5 2" solref="0.004 1"/>
-    <equality solimp="0.97 0.999 0.0001 0.5 2" solref="0.002 1"/>
+    <geom friction="0.5 0.01 0.01" condim="3" margin="0.001"/>
+    <equality solref="0.005 1" solimp="0.95 0.99 0.001"/>
   </default>
-
-  <visual>
-    <global offwidth="800" offheight="450"/>
-  </visual>
-
   <worldbody>
-    <camera name="top" pos="0 0 4" zaxis="0 0 1" mode="fixed"/>
-    <camera name="persp" pos="0 -1.0 2.5" xyaxes="1 0 0 0 0.93 0.37" mode="fixed"/>
-    <light pos="0 2 4" dir="0 -0.3 -1" diffuse="1 1 1"/>
-    <light pos="0 -2 4" dir="0 0.3 -1" diffuse="0.5 0.5 0.5"/>
-    <body name="drive_sprocket" pos="-1.4 0 0">
-      <joint name="drive_joint" type="hinge" axis="0 0 1" damping="0.1"/>
-      <geom name="drive_hub" type="cylinder" size="0.3140 0.1220" rgba="0.55 0.15 0.15 1"/>
-      <geom name="drive_pin_0" type="capsule" size="0.018 0.0300" pos="0.35000 0.00000 0" rgba="0.8 0.3 0.3 1" mass="0.002"/>
-      <geom name="drive_pin_1" type="capsule" size="0.018 0.0300" pos="0.24749 0.24749 0" rgba="0.8 0.3 0.3 1" mass="0.002"/>
-      <geom name="drive_pin_2" type="capsule" size="0.018 0.0300" pos="0.00000 0.35000 0" rgba="0.8 0.3 0.3 1" mass="0.002"/>
-      <geom name="drive_pin_3" type="capsule" size="0.018 0.0300" pos="-0.24749 0.24749 0" rgba="0.8 0.3 0.3 1" mass="0.002"/>
-      <geom name="drive_pin_4" type="capsule" size="0.018 0.0300" pos="-0.35000 0.00000 0" rgba="0.8 0.3 0.3 1" mass="0.002"/>
-      <geom name="drive_pin_5" type="capsule" size="0.018 0.0300" pos="-0.24749 -0.24749 0" rgba="0.8 0.3 0.3 1" mass="0.002"/>
-      <geom name="drive_pin_6" type="capsule" size="0.018 0.0300" pos="-0.00000 -0.35000 0" rgba="0.8 0.3 0.3 1" mass="0.002"/>
-      <geom name="drive_pin_7" type="capsule" size="0.018 0.0300" pos="0.24749 -0.24749 0" rgba="0.8 0.3 0.3 1" mass="0.002"/>
+    <camera name="overview" pos="0 -0.5 6" xyaxes="1 0 0 0 1 0" fovy="60"/>
+    <light pos="0 2 4" dir="0 -0.5 -1" diffuse="1 1 1"/>
+    <light pos="0 -2 4" dir="0 0.5 -1" diffuse="0.5 0.5 0.5"/>
+    <body name="drive_sprocket" pos="-1.4 0.0 0">
+      <joint name="drive_hinge" type="hinge" axis="0 0 1" damping="0.2"/>
+      <geom type="cylinder" size="0.31 0.15" rgba="0.7 0.2 0.2 1" contype="0" conaffinity="0"/>
     </body>
-    <body name="mid_sprocket" pos="0.0 0 0">
-      <joint name="mid_joint" type="hinge" axis="0 0 1" damping="0.1"/>
-      <geom name="mid_hub" type="cylinder" size="0.3140 0.1220" rgba="0.15 0.45 0.15 1"/>
-      <geom name="mid_pin_0" type="capsule" size="0.018 0.0300" pos="0.35000 0.00000 0" rgba="0.3 0.7 0.3 1" mass="0.002"/>
-      <geom name="mid_pin_1" type="capsule" size="0.018 0.0300" pos="0.24749 0.24749 0" rgba="0.3 0.7 0.3 1" mass="0.002"/>
-      <geom name="mid_pin_2" type="capsule" size="0.018 0.0300" pos="0.00000 0.35000 0" rgba="0.3 0.7 0.3 1" mass="0.002"/>
-      <geom name="mid_pin_3" type="capsule" size="0.018 0.0300" pos="-0.24749 0.24749 0" rgba="0.3 0.7 0.3 1" mass="0.002"/>
-      <geom name="mid_pin_4" type="capsule" size="0.018 0.0300" pos="-0.35000 0.00000 0" rgba="0.3 0.7 0.3 1" mass="0.002"/>
-      <geom name="mid_pin_5" type="capsule" size="0.018 0.0300" pos="-0.24749 -0.24749 0" rgba="0.3 0.7 0.3 1" mass="0.002"/>
-      <geom name="mid_pin_6" type="capsule" size="0.018 0.0300" pos="-0.00000 -0.35000 0" rgba="0.3 0.7 0.3 1" mass="0.002"/>
-      <geom name="mid_pin_7" type="capsule" size="0.018 0.0300" pos="0.24749 -0.24749 0" rgba="0.3 0.7 0.3 1" mass="0.002"/>
+    <body name="idler_sprocket" pos="1.4 0.0 0">
+      <joint name="idler_slide" type="slide" axis="1 0 0" stiffness="80.0" damping="80" range="-0.05 0.3"/>
+      <joint name="idler_hinge" type="hinge" axis="0 0 1" damping="0.2"/>
+      <geom type="cylinder" size="0.31 0.15" rgba="0.2 0.2 0.7 1" contype="0" conaffinity="0"/>
     </body>
-    <body name="idler_sprocket" pos="1.4 0 0">
-      <joint name="idler_slide" type="slide" axis="1 0 0" damping="2.0" limited="true" range="0 0.3"/>
-      <joint name="idler_joint" type="hinge" axis="0 0 1" damping="0.1"/>
-      <geom name="idler_hub" type="cylinder" size="0.3140 0.1220" rgba="0.15 0.15 0.55 1"/>
-      <geom name="idler_pin_0" type="capsule" size="0.018 0.0300" pos="0.35000 0.00000 0" rgba="0.3 0.3 0.8 1" mass="0.002"/>
-      <geom name="idler_pin_1" type="capsule" size="0.018 0.0300" pos="0.24749 0.24749 0" rgba="0.3 0.3 0.8 1" mass="0.002"/>
-      <geom name="idler_pin_2" type="capsule" size="0.018 0.0300" pos="0.00000 0.35000 0" rgba="0.3 0.3 0.8 1" mass="0.002"/>
-      <geom name="idler_pin_3" type="capsule" size="0.018 0.0300" pos="-0.24749 0.24749 0" rgba="0.3 0.3 0.8 1" mass="0.002"/>
-      <geom name="idler_pin_4" type="capsule" size="0.018 0.0300" pos="-0.35000 0.00000 0" rgba="0.3 0.3 0.8 1" mass="0.002"/>
-      <geom name="idler_pin_5" type="capsule" size="0.018 0.0300" pos="-0.24749 -0.24749 0" rgba="0.3 0.3 0.8 1" mass="0.002"/>
-      <geom name="idler_pin_6" type="capsule" size="0.018 0.0300" pos="-0.00000 -0.35000 0" rgba="0.3 0.3 0.8 1" mass="0.002"/>
-      <geom name="idler_pin_7" type="capsule" size="0.018 0.0300" pos="0.24749 -0.24749 0" rgba="0.3 0.3 0.8 1" mass="0.002"/>
+    <body name="mid_sprocket" pos="0.0 0.0 0">
+      <joint name="mid_hinge" type="hinge" axis="0 0 1" damping="0.2"/>
+      <geom type="cylinder" size="0.31 0.15" rgba="0.2 0.6 0.2 1" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_0" pos="1.400000 0.378000 0" quat="0.000000 0 0 1.000000">
-      <freejoint name="free_0"/>
-      <geom name="side_L_0" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_0" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_0" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_0" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_0_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_0_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_0" pos="1.400000 0.350000 0" quat="0.000000 0 0 1.000000">
+      <freejoint name="link_0_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="1.0 0.2 0.2 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_1" pos="1.134165 0.378000 0" quat="0.000000 0 0 1.000000">
-      <freejoint name="free_1"/>
-      <geom name="side_L_1" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_1" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_1" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_1" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_1_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_1_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_1" pos="1.140030 0.350000 0" quat="0.000000 0 0 1.000000">
+      <freejoint name="link_1_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_2" pos="0.868330 0.378000 0" quat="0.000000 0 0 1.000000">
-      <freejoint name="free_2"/>
-      <geom name="side_L_2" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_2" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_2" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_2" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_2_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_2_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_2" pos="0.880059 0.350000 0" quat="0.000000 0 0 1.000000">
+      <freejoint name="link_2_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_3" pos="0.602496 0.378000 0" quat="0.000000 0 0 1.000000">
-      <freejoint name="free_3"/>
-      <geom name="side_L_3" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_3" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_3" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_3" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_3_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_3_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_3" pos="0.620089 0.350000 0" quat="0.000000 0 0 1.000000">
+      <freejoint name="link_3_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_4" pos="0.336661 0.378000 0" quat="0.000000 0 0 1.000000">
-      <freejoint name="free_4"/>
-      <geom name="side_L_4" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_4" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_4" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_4" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_4_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_4_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_4" pos="0.360118 0.350000 0" quat="0.000000 0 0 1.000000">
+      <freejoint name="link_4_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_5" pos="0.070826 0.378000 0" quat="0.000000 0 0 1.000000">
-      <freejoint name="free_5"/>
-      <geom name="side_L_5" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_5" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_5" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_5" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_5_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_5_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_5" pos="0.100148 0.350000 0" quat="0.000000 0 0 1.000000">
+      <freejoint name="link_5_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_6" pos="-0.195009 0.378000 0" quat="0.000000 0 0 1.000000">
-      <freejoint name="free_6"/>
-      <geom name="side_L_6" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_6" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_6" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_6" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_6_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_6_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_6" pos="-0.159823 0.350000 0" quat="0.000000 0 0 1.000000">
+      <freejoint name="link_6_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_7" pos="-0.460844 0.378000 0" quat="0.000000 0 0 1.000000">
-      <freejoint name="free_7"/>
-      <geom name="side_L_7" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_7" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_7" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_7" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_7_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_7_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_7" pos="-0.419793 0.350000 0" quat="0.000000 0 0 1.000000">
+      <freejoint name="link_7_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_8" pos="-0.726678 0.378000 0" quat="0.000000 0 0 1.000000">
-      <freejoint name="free_8"/>
-      <geom name="side_L_8" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_8" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_8" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_8" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_8_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_8_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_8" pos="-0.679764 0.350000 0" quat="0.000000 0 0 1.000000">
+      <freejoint name="link_8_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_9" pos="-0.992513 0.378000 0" quat="0.000000 0 0 1.000000">
-      <freejoint name="free_9"/>
-      <geom name="side_L_9" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_9" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_9" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_9" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_9_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_9_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_9" pos="-0.939734 0.350000 0" quat="0.000000 0 0 1.000000">
+      <freejoint name="link_9_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_10" pos="-1.258348 0.378000 0" quat="0.000000 0 0 1.000000">
-      <freejoint name="free_10"/>
-      <geom name="side_L_10" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_10" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_10" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_10" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_10_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_10_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_10" pos="-1.199705 0.350000 0" quat="0.000000 0 0 1.000000">
+      <freejoint name="link_10_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_11" pos="-1.521961 0.357784 0" quat="-0.163525 0 0 0.986539">
-      <freejoint name="free_11"/>
-      <geom name="side_L_11" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_11" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_11" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_11" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_11_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_11_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_11" pos="-1.459387 0.344925 0" quat="-0.085147 0 0 0.996368">
+      <freejoint name="link_11_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_12" pos="-1.724407 0.194020 0" quat="-0.493315 0 0 0.869851">
-      <freejoint name="free_12"/>
-      <geom name="side_L_12" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_12" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_12" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_12" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_12_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_12_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_12" pos="-1.677028 0.213905 0" quat="-0.440932 0 0 0.897540">
+      <freejoint name="link_12_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_13" pos="-1.772912 -0.061813 0" quat="-0.762734 0 0 0.646713">
-      <freejoint name="free_13"/>
-      <geom name="side_L_13" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_13" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_13" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_13" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_13_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_13_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_13" pos="-1.748729 -0.029802 0" quat="-0.736596 0 0 0.676333">
+      <freejoint name="link_13_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_14" pos="-1.644457 -0.288313 0" quat="-0.938811 0 0 0.344432">
-      <freejoint name="free_14"/>
-      <geom name="side_L_14" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_14" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_14" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_14" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_14_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_14_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_14" pos="-1.636717 -0.257809 0" quat="-0.931825 0 0 0.362908">
+      <freejoint name="link_14_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_15" pos="-1.400000 -0.378000 0" quat="-1.000000 0 0 0.000000">
-      <freejoint name="free_15"/>
-      <geom name="side_L_15" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_15" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_15" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_15" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_15_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_15_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_15" pos="-1.400000 -0.350000 0" quat="1.000000 0 0 0.000000">
+      <freejoint name="link_15_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_16" pos="-1.134165 -0.378000 0" quat="1.000000 0 0 0.000000">
-      <freejoint name="free_16"/>
-      <geom name="side_L_16" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_16" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_16" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_16" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_16_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_16_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_16" pos="-1.140030 -0.350000 0" quat="1.000000 0 0 0.000000">
+      <freejoint name="link_16_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_17" pos="-0.868330 -0.378000 0" quat="1.000000 0 0 0.000000">
-      <freejoint name="free_17"/>
-      <geom name="side_L_17" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_17" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_17" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_17" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_17_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_17_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_17" pos="-0.880059 -0.350000 0" quat="1.000000 0 0 0.000000">
+      <freejoint name="link_17_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_18" pos="-0.602496 -0.378000 0" quat="1.000000 0 0 0.000000">
-      <freejoint name="free_18"/>
-      <geom name="side_L_18" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_18" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_18" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_18" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_18_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_18_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_18" pos="-0.620089 -0.350000 0" quat="1.000000 0 0 0.000000">
+      <freejoint name="link_18_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_19" pos="-0.336661 -0.378000 0" quat="1.000000 0 0 0.000000">
-      <freejoint name="free_19"/>
-      <geom name="side_L_19" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_19" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_19" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_19" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_19_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_19_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_19" pos="-0.360118 -0.350000 0" quat="1.000000 0 0 0.000000">
+      <freejoint name="link_19_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_20" pos="-0.070826 -0.378000 0" quat="1.000000 0 0 0.000000">
-      <freejoint name="free_20"/>
-      <geom name="side_L_20" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_20" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_20" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_20" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_20_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_20_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_20" pos="-0.100148 -0.350000 0" quat="1.000000 0 0 0.000000">
+      <freejoint name="link_20_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_21" pos="0.195009 -0.378000 0" quat="1.000000 0 0 0.000000">
-      <freejoint name="free_21"/>
-      <geom name="side_L_21" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_21" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_21" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_21" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_21_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_21_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_21" pos="0.159823 -0.350000 0" quat="1.000000 0 0 0.000000">
+      <freejoint name="link_21_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_22" pos="0.460844 -0.378000 0" quat="1.000000 0 0 0.000000">
-      <freejoint name="free_22"/>
-      <geom name="side_L_22" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_22" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_22" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_22" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_22_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_22_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_22" pos="0.419793 -0.350000 0" quat="1.000000 0 0 0.000000">
+      <freejoint name="link_22_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_23" pos="0.726678 -0.378000 0" quat="1.000000 0 0 0.000000">
-      <freejoint name="free_23"/>
-      <geom name="side_L_23" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_23" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_23" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_23" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_23_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_23_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_23" pos="0.679764 -0.350000 0" quat="1.000000 0 0 0.000000">
+      <freejoint name="link_23_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_24" pos="0.992513 -0.378000 0" quat="1.000000 0 0 0.000000">
-      <freejoint name="free_24"/>
-      <geom name="side_L_24" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_24" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_24" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_24" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_24_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_24_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_24" pos="0.939734 -0.350000 0" quat="1.000000 0 0 0.000000">
+      <freejoint name="link_24_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_25" pos="1.258348 -0.378000 0" quat="1.000000 0 0 0.000000">
-      <freejoint name="free_25"/>
-      <geom name="side_L_25" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_25" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_25" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_25" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_25_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_25_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_25" pos="1.199705 -0.350000 0" quat="1.000000 0 0 0.000000">
+      <freejoint name="link_25_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_26" pos="1.521961 -0.357784 0" quat="0.986539 0 0 0.163525">
-      <freejoint name="free_26"/>
-      <geom name="side_L_26" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_26" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_26" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_26" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_26_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_26_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_26" pos="1.459387 -0.344925 0" quat="0.996368 0 0 0.085147">
+      <freejoint name="link_26_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_27" pos="1.724407 -0.194020 0" quat="0.869851 0 0 0.493315">
-      <freejoint name="free_27"/>
-      <geom name="side_L_27" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_27" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_27" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_27" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_27_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_27_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_27" pos="1.677028 -0.213905 0" quat="0.897540 0 0 0.440932">
+      <freejoint name="link_27_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_28" pos="1.772912 0.061813 0" quat="0.646713 0 0 0.762734">
-      <freejoint name="free_28"/>
-      <geom name="side_L_28" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_28" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_28" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_28" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_28_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_28_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_28" pos="1.748729 0.029802 0" quat="0.676333 0 0 0.736596">
+      <freejoint name="link_28_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
-    <body name="link_29" pos="1.644457 0.288313 0" quat="0.344432 0 0 0.938811">
-      <freejoint name="free_29"/>
-      <geom name="side_L_29" type="box" size="0.09969 0.01 0.012" pos="0 0 -0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="side_R_29" type="box" size="0.09969 0.01 0.012" pos="0 0 0.1" rgba="1 0.6 0 1" mass="0.008"/>
-      <geom name="cross_29" type="box" size="0.006 0.008 0.11200" pos="0 0.01800 0" rgba="0.8 0.8 0.2 1" mass="0.003"/>
-      <geom name="roller_29" type="capsule" size="0.014 0.0850" pos="0.13292 0 0" rgba="0.9 0.5 0.1 1" mass="0.002"/>
-      <site name="pin_29_fwd" pos="0.13292 0 0" size="0.004" rgba="0 1 0 1"/>
-      <site name="pin_29_bwd" pos="-0.13292 0 0" size="0.004" rgba="1 0 1 1"/>
+    <body name="link_29" pos="1.636717 0.257809 0" quat="0.362908 0 0 0.931825">
+      <freejoint name="link_29_jnt"/>
+      <geom type="box" size="0.1250 0.02 0.12" rgba="0.9 0.6 0.1 1" mass="0.05" contype="1" conaffinity="1"/>
     </body>
   </worldbody>
   <actuator>
-    <motor name="drive_motor" joint="drive_joint" gear="1" ctrllimited="true" ctrlrange="-3.0 3.0"/>
-    <motor name="idler_motor" joint="idler_joint" gear="1" ctrllimited="true" ctrlrange="-3.0 3.0"/>
-    <motor name="mid_motor" joint="mid_joint" gear="1" ctrllimited="true" ctrlrange="-3.0 3.0"/>
-    <motor name="tensioner" joint="idler_slide" gear="1" ctrllimited="true" ctrlrange="0 15.0"/>
+    <velocity name="drive_motor" joint="drive_hinge" kv="20" ctrllimited="true" ctrlrange="-5 5"/>
+    <velocity name="idler_motor" joint="idler_hinge" kv="20" ctrllimited="true" ctrlrange="-5 5"/>
+    <velocity name="mid_motor" joint="mid_hinge" kv="20" ctrllimited="true" ctrlrange="-5 5"/>
   </actuator>
   <equality>
-    <connect body1="link_0" body2="link_1" anchor="0.13292 0 0"/>
-    <connect body1="link_1" body2="link_2" anchor="0.13292 0 0"/>
-    <connect body1="link_2" body2="link_3" anchor="0.13292 0 0"/>
-    <connect body1="link_3" body2="link_4" anchor="0.13292 0 0"/>
-    <connect body1="link_4" body2="link_5" anchor="0.13292 0 0"/>
-    <connect body1="link_5" body2="link_6" anchor="0.13292 0 0"/>
-    <connect body1="link_6" body2="link_7" anchor="0.13292 0 0"/>
-    <connect body1="link_7" body2="link_8" anchor="0.13292 0 0"/>
-    <connect body1="link_8" body2="link_9" anchor="0.13292 0 0"/>
-    <connect body1="link_9" body2="link_10" anchor="0.13292 0 0"/>
-    <connect body1="link_10" body2="link_11" anchor="0.13292 0 0"/>
-    <connect body1="link_11" body2="link_12" anchor="0.13292 0 0"/>
-    <connect body1="link_12" body2="link_13" anchor="0.13292 0 0"/>
-    <connect body1="link_13" body2="link_14" anchor="0.13292 0 0"/>
-    <connect body1="link_14" body2="link_15" anchor="0.13292 0 0"/>
-    <connect body1="link_15" body2="link_16" anchor="0.13292 0 0"/>
-    <connect body1="link_16" body2="link_17" anchor="0.13292 0 0"/>
-    <connect body1="link_17" body2="link_18" anchor="0.13292 0 0"/>
-    <connect body1="link_18" body2="link_19" anchor="0.13292 0 0"/>
-    <connect body1="link_19" body2="link_20" anchor="0.13292 0 0"/>
-    <connect body1="link_20" body2="link_21" anchor="0.13292 0 0"/>
-    <connect body1="link_21" body2="link_22" anchor="0.13292 0 0"/>
-    <connect body1="link_22" body2="link_23" anchor="0.13292 0 0"/>
-    <connect body1="link_23" body2="link_24" anchor="0.13292 0 0"/>
-    <connect body1="link_24" body2="link_25" anchor="0.13292 0 0"/>
-    <connect body1="link_25" body2="link_26" anchor="0.13292 0 0"/>
-    <connect body1="link_26" body2="link_27" anchor="0.13292 0 0"/>
-    <connect body1="link_27" body2="link_28" anchor="0.13292 0 0"/>
-    <connect body1="link_28" body2="link_29" anchor="0.13292 0 0"/>
-    <connect body1="link_29" body2="link_0" anchor="0.13292 0 0"/>
+    <connect name="pin_0_1_L" body1="link_0" body2="link_1" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_0_1_R" body1="link_0" body2="link_1" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_1_2_L" body1="link_1" body2="link_2" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_1_2_R" body1="link_1" body2="link_2" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_2_3_L" body1="link_2" body2="link_3" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_2_3_R" body1="link_2" body2="link_3" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_3_4_L" body1="link_3" body2="link_4" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_3_4_R" body1="link_3" body2="link_4" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_4_5_L" body1="link_4" body2="link_5" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_4_5_R" body1="link_4" body2="link_5" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_5_6_L" body1="link_5" body2="link_6" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_5_6_R" body1="link_5" body2="link_6" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_6_7_L" body1="link_6" body2="link_7" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_6_7_R" body1="link_6" body2="link_7" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_7_8_L" body1="link_7" body2="link_8" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_7_8_R" body1="link_7" body2="link_8" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_8_9_L" body1="link_8" body2="link_9" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_8_9_R" body1="link_8" body2="link_9" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_9_10_L" body1="link_9" body2="link_10" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_9_10_R" body1="link_9" body2="link_10" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_10_11_L" body1="link_10" body2="link_11" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_10_11_R" body1="link_10" body2="link_11" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_11_12_L" body1="link_11" body2="link_12" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_11_12_R" body1="link_11" body2="link_12" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_12_13_L" body1="link_12" body2="link_13" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_12_13_R" body1="link_12" body2="link_13" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_13_14_L" body1="link_13" body2="link_14" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_13_14_R" body1="link_13" body2="link_14" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_14_15_L" body1="link_14" body2="link_15" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_14_15_R" body1="link_14" body2="link_15" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_15_16_L" body1="link_15" body2="link_16" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_15_16_R" body1="link_15" body2="link_16" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_16_17_L" body1="link_16" body2="link_17" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_16_17_R" body1="link_16" body2="link_17" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_17_18_L" body1="link_17" body2="link_18" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_17_18_R" body1="link_17" body2="link_18" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_18_19_L" body1="link_18" body2="link_19" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_18_19_R" body1="link_18" body2="link_19" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_19_20_L" body1="link_19" body2="link_20" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_19_20_R" body1="link_19" body2="link_20" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_20_21_L" body1="link_20" body2="link_21" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_20_21_R" body1="link_20" body2="link_21" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_21_22_L" body1="link_21" body2="link_22" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_21_22_R" body1="link_21" body2="link_22" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_22_23_L" body1="link_22" body2="link_23" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_22_23_R" body1="link_22" body2="link_23" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_23_24_L" body1="link_23" body2="link_24" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_23_24_R" body1="link_23" body2="link_24" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_24_25_L" body1="link_24" body2="link_25" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_24_25_R" body1="link_24" body2="link_25" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_25_26_L" body1="link_25" body2="link_26" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_25_26_R" body1="link_25" body2="link_26" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_26_27_L" body1="link_26" body2="link_27" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_26_27_R" body1="link_26" body2="link_27" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_27_28_L" body1="link_27" body2="link_28" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_27_28_R" body1="link_27" body2="link_28" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_28_29_L" body1="link_28" body2="link_29" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_28_29_R" body1="link_28" body2="link_29" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="pin_29_0_L" body1="link_29" body2="link_0" anchor="0.129985 0 -0.06" active="true"/>
+    <connect name="pin_29_0_R" body1="link_29" body2="link_0" anchor="0.129985 0 0.06" active="true"/>
+    <connect name="eng_0_drive_L" body1="drive_sprocket" body2="link_0" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_0_drive_R" body1="drive_sprocket" body2="link_0" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_0_idler_L" body1="idler_sprocket" body2="link_0" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_0_idler_R" body1="idler_sprocket" body2="link_0" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_0_mid_L" body1="mid_sprocket" body2="link_0" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_0_mid_R" body1="mid_sprocket" body2="link_0" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_1_drive_L" body1="drive_sprocket" body2="link_1" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_1_drive_R" body1="drive_sprocket" body2="link_1" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_1_idler_L" body1="idler_sprocket" body2="link_1" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_1_idler_R" body1="idler_sprocket" body2="link_1" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_1_mid_L" body1="mid_sprocket" body2="link_1" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_1_mid_R" body1="mid_sprocket" body2="link_1" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_2_drive_L" body1="drive_sprocket" body2="link_2" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_2_drive_R" body1="drive_sprocket" body2="link_2" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_2_idler_L" body1="idler_sprocket" body2="link_2" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_2_idler_R" body1="idler_sprocket" body2="link_2" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_2_mid_L" body1="mid_sprocket" body2="link_2" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_2_mid_R" body1="mid_sprocket" body2="link_2" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_3_drive_L" body1="drive_sprocket" body2="link_3" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_3_drive_R" body1="drive_sprocket" body2="link_3" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_3_idler_L" body1="idler_sprocket" body2="link_3" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_3_idler_R" body1="idler_sprocket" body2="link_3" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_3_mid_L" body1="mid_sprocket" body2="link_3" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_3_mid_R" body1="mid_sprocket" body2="link_3" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_4_drive_L" body1="drive_sprocket" body2="link_4" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_4_drive_R" body1="drive_sprocket" body2="link_4" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_4_idler_L" body1="idler_sprocket" body2="link_4" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_4_idler_R" body1="idler_sprocket" body2="link_4" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_4_mid_L" body1="mid_sprocket" body2="link_4" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_4_mid_R" body1="mid_sprocket" body2="link_4" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_5_drive_L" body1="drive_sprocket" body2="link_5" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_5_drive_R" body1="drive_sprocket" body2="link_5" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_5_idler_L" body1="idler_sprocket" body2="link_5" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_5_idler_R" body1="idler_sprocket" body2="link_5" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_5_mid_L" body1="mid_sprocket" body2="link_5" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_5_mid_R" body1="mid_sprocket" body2="link_5" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_6_drive_L" body1="drive_sprocket" body2="link_6" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_6_drive_R" body1="drive_sprocket" body2="link_6" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_6_idler_L" body1="idler_sprocket" body2="link_6" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_6_idler_R" body1="idler_sprocket" body2="link_6" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_6_mid_L" body1="mid_sprocket" body2="link_6" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_6_mid_R" body1="mid_sprocket" body2="link_6" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_7_drive_L" body1="drive_sprocket" body2="link_7" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_7_drive_R" body1="drive_sprocket" body2="link_7" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_7_idler_L" body1="idler_sprocket" body2="link_7" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_7_idler_R" body1="idler_sprocket" body2="link_7" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_7_mid_L" body1="mid_sprocket" body2="link_7" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_7_mid_R" body1="mid_sprocket" body2="link_7" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_8_drive_L" body1="drive_sprocket" body2="link_8" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_8_drive_R" body1="drive_sprocket" body2="link_8" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_8_idler_L" body1="idler_sprocket" body2="link_8" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_8_idler_R" body1="idler_sprocket" body2="link_8" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_8_mid_L" body1="mid_sprocket" body2="link_8" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_8_mid_R" body1="mid_sprocket" body2="link_8" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_9_drive_L" body1="drive_sprocket" body2="link_9" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_9_drive_R" body1="drive_sprocket" body2="link_9" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_9_idler_L" body1="idler_sprocket" body2="link_9" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_9_idler_R" body1="idler_sprocket" body2="link_9" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_9_mid_L" body1="mid_sprocket" body2="link_9" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_9_mid_R" body1="mid_sprocket" body2="link_9" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_10_drive_L" body1="drive_sprocket" body2="link_10" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_10_drive_R" body1="drive_sprocket" body2="link_10" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_10_idler_L" body1="idler_sprocket" body2="link_10" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_10_idler_R" body1="idler_sprocket" body2="link_10" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_10_mid_L" body1="mid_sprocket" body2="link_10" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_10_mid_R" body1="mid_sprocket" body2="link_10" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_11_drive_L" body1="drive_sprocket" body2="link_11" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_11_drive_R" body1="drive_sprocket" body2="link_11" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_11_idler_L" body1="idler_sprocket" body2="link_11" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_11_idler_R" body1="idler_sprocket" body2="link_11" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_11_mid_L" body1="mid_sprocket" body2="link_11" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_11_mid_R" body1="mid_sprocket" body2="link_11" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_12_drive_L" body1="drive_sprocket" body2="link_12" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_12_drive_R" body1="drive_sprocket" body2="link_12" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_12_idler_L" body1="idler_sprocket" body2="link_12" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_12_idler_R" body1="idler_sprocket" body2="link_12" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_12_mid_L" body1="mid_sprocket" body2="link_12" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_12_mid_R" body1="mid_sprocket" body2="link_12" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_13_drive_L" body1="drive_sprocket" body2="link_13" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_13_drive_R" body1="drive_sprocket" body2="link_13" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_13_idler_L" body1="idler_sprocket" body2="link_13" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_13_idler_R" body1="idler_sprocket" body2="link_13" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_13_mid_L" body1="mid_sprocket" body2="link_13" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_13_mid_R" body1="mid_sprocket" body2="link_13" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_14_drive_L" body1="drive_sprocket" body2="link_14" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_14_drive_R" body1="drive_sprocket" body2="link_14" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_14_idler_L" body1="idler_sprocket" body2="link_14" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_14_idler_R" body1="idler_sprocket" body2="link_14" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_14_mid_L" body1="mid_sprocket" body2="link_14" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_14_mid_R" body1="mid_sprocket" body2="link_14" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_15_drive_L" body1="drive_sprocket" body2="link_15" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_15_drive_R" body1="drive_sprocket" body2="link_15" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_15_idler_L" body1="idler_sprocket" body2="link_15" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_15_idler_R" body1="idler_sprocket" body2="link_15" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_15_mid_L" body1="mid_sprocket" body2="link_15" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_15_mid_R" body1="mid_sprocket" body2="link_15" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_16_drive_L" body1="drive_sprocket" body2="link_16" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_16_drive_R" body1="drive_sprocket" body2="link_16" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_16_idler_L" body1="idler_sprocket" body2="link_16" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_16_idler_R" body1="idler_sprocket" body2="link_16" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_16_mid_L" body1="mid_sprocket" body2="link_16" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_16_mid_R" body1="mid_sprocket" body2="link_16" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_17_drive_L" body1="drive_sprocket" body2="link_17" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_17_drive_R" body1="drive_sprocket" body2="link_17" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_17_idler_L" body1="idler_sprocket" body2="link_17" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_17_idler_R" body1="idler_sprocket" body2="link_17" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_17_mid_L" body1="mid_sprocket" body2="link_17" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_17_mid_R" body1="mid_sprocket" body2="link_17" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_18_drive_L" body1="drive_sprocket" body2="link_18" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_18_drive_R" body1="drive_sprocket" body2="link_18" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_18_idler_L" body1="idler_sprocket" body2="link_18" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_18_idler_R" body1="idler_sprocket" body2="link_18" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_18_mid_L" body1="mid_sprocket" body2="link_18" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_18_mid_R" body1="mid_sprocket" body2="link_18" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_19_drive_L" body1="drive_sprocket" body2="link_19" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_19_drive_R" body1="drive_sprocket" body2="link_19" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_19_idler_L" body1="idler_sprocket" body2="link_19" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_19_idler_R" body1="idler_sprocket" body2="link_19" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_19_mid_L" body1="mid_sprocket" body2="link_19" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_19_mid_R" body1="mid_sprocket" body2="link_19" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_20_drive_L" body1="drive_sprocket" body2="link_20" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_20_drive_R" body1="drive_sprocket" body2="link_20" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_20_idler_L" body1="idler_sprocket" body2="link_20" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_20_idler_R" body1="idler_sprocket" body2="link_20" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_20_mid_L" body1="mid_sprocket" body2="link_20" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_20_mid_R" body1="mid_sprocket" body2="link_20" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_21_drive_L" body1="drive_sprocket" body2="link_21" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_21_drive_R" body1="drive_sprocket" body2="link_21" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_21_idler_L" body1="idler_sprocket" body2="link_21" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_21_idler_R" body1="idler_sprocket" body2="link_21" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_21_mid_L" body1="mid_sprocket" body2="link_21" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_21_mid_R" body1="mid_sprocket" body2="link_21" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_22_drive_L" body1="drive_sprocket" body2="link_22" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_22_drive_R" body1="drive_sprocket" body2="link_22" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_22_idler_L" body1="idler_sprocket" body2="link_22" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_22_idler_R" body1="idler_sprocket" body2="link_22" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_22_mid_L" body1="mid_sprocket" body2="link_22" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_22_mid_R" body1="mid_sprocket" body2="link_22" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_23_drive_L" body1="drive_sprocket" body2="link_23" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_23_drive_R" body1="drive_sprocket" body2="link_23" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_23_idler_L" body1="idler_sprocket" body2="link_23" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_23_idler_R" body1="idler_sprocket" body2="link_23" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_23_mid_L" body1="mid_sprocket" body2="link_23" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_23_mid_R" body1="mid_sprocket" body2="link_23" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_24_drive_L" body1="drive_sprocket" body2="link_24" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_24_drive_R" body1="drive_sprocket" body2="link_24" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_24_idler_L" body1="idler_sprocket" body2="link_24" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_24_idler_R" body1="idler_sprocket" body2="link_24" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_24_mid_L" body1="mid_sprocket" body2="link_24" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_24_mid_R" body1="mid_sprocket" body2="link_24" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_25_drive_L" body1="drive_sprocket" body2="link_25" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_25_drive_R" body1="drive_sprocket" body2="link_25" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_25_idler_L" body1="idler_sprocket" body2="link_25" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_25_idler_R" body1="idler_sprocket" body2="link_25" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_25_mid_L" body1="mid_sprocket" body2="link_25" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_25_mid_R" body1="mid_sprocket" body2="link_25" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_26_drive_L" body1="drive_sprocket" body2="link_26" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_26_drive_R" body1="drive_sprocket" body2="link_26" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_26_idler_L" body1="idler_sprocket" body2="link_26" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_26_idler_R" body1="idler_sprocket" body2="link_26" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_26_mid_L" body1="mid_sprocket" body2="link_26" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_26_mid_R" body1="mid_sprocket" body2="link_26" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_27_drive_L" body1="drive_sprocket" body2="link_27" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_27_drive_R" body1="drive_sprocket" body2="link_27" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_27_idler_L" body1="idler_sprocket" body2="link_27" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_27_idler_R" body1="idler_sprocket" body2="link_27" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_27_mid_L" body1="mid_sprocket" body2="link_27" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_27_mid_R" body1="mid_sprocket" body2="link_27" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_28_drive_L" body1="drive_sprocket" body2="link_28" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_28_drive_R" body1="drive_sprocket" body2="link_28" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_28_idler_L" body1="idler_sprocket" body2="link_28" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_28_idler_R" body1="idler_sprocket" body2="link_28" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_28_mid_L" body1="mid_sprocket" body2="link_28" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_28_mid_R" body1="mid_sprocket" body2="link_28" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_29_drive_L" body1="drive_sprocket" body2="link_29" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_29_drive_R" body1="drive_sprocket" body2="link_29" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_29_idler_L" body1="idler_sprocket" body2="link_29" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_29_idler_R" body1="idler_sprocket" body2="link_29" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_29_mid_L" body1="mid_sprocket" body2="link_29" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
+    <connect name="eng_29_mid_R" body1="mid_sprocket" body2="link_29" anchor="0 0 0" solref="0.005 1" solimp="0.95 0.99 0.001" active="false"/>
   </equality>
-  <contact>
-    <exclude body1="link_0" body2="link_1"/>
-    <exclude body1="link_1" body2="link_2"/>
-    <exclude body1="link_2" body2="link_3"/>
-    <exclude body1="link_3" body2="link_4"/>
-    <exclude body1="link_4" body2="link_5"/>
-    <exclude body1="link_5" body2="link_6"/>
-    <exclude body1="link_6" body2="link_7"/>
-    <exclude body1="link_7" body2="link_8"/>
-    <exclude body1="link_8" body2="link_9"/>
-    <exclude body1="link_9" body2="link_10"/>
-    <exclude body1="link_10" body2="link_11"/>
-    <exclude body1="link_11" body2="link_12"/>
-    <exclude body1="link_12" body2="link_13"/>
-    <exclude body1="link_13" body2="link_14"/>
-    <exclude body1="link_14" body2="link_15"/>
-    <exclude body1="link_15" body2="link_16"/>
-    <exclude body1="link_16" body2="link_17"/>
-    <exclude body1="link_17" body2="link_18"/>
-    <exclude body1="link_18" body2="link_19"/>
-    <exclude body1="link_19" body2="link_20"/>
-    <exclude body1="link_20" body2="link_21"/>
-    <exclude body1="link_21" body2="link_22"/>
-    <exclude body1="link_22" body2="link_23"/>
-    <exclude body1="link_23" body2="link_24"/>
-    <exclude body1="link_24" body2="link_25"/>
-    <exclude body1="link_25" body2="link_26"/>
-    <exclude body1="link_26" body2="link_27"/>
-    <exclude body1="link_27" body2="link_28"/>
-    <exclude body1="link_28" body2="link_29"/>
-    <exclude body1="link_29" body2="link_0"/>
-  </contact>
 </mujoco>
